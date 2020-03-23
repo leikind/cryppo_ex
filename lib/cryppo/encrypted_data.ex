@@ -9,7 +9,7 @@ defmodule Cryppo.EncryptedData do
   defstruct [:encryption_strategy, :encrypted_data, :encryption_artefacts]
 
   @spec new(Cryppo.encryption_strategy_name(), binary, map() | Keyword.t()) :: t()
-  def new(encryption_strategy, encrypted_data, encryption_artefacts)
+  def new(encryption_strategy, encrypted_data, encryption_artefacts \\ %{})
       when is_atom(encryption_strategy) and is_binary(encrypted_data) do
     %__MODULE__{
       encryption_strategy: encryption_strategy,

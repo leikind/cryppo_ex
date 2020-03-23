@@ -25,6 +25,8 @@ defmodule Cryppo do
     end
   end
 
+  @spec decrypt(Cryppo.EncryptedData.t(), Cryppo.EncryptionKey.t()) ::
+          {:ok, binary} | {:error, binary | {binary, binary}}
   def decrypt(
         %EncryptedData{encryption_strategy: encryption_strategy} = encrypted_data,
         %EncryptionKey{} = key
@@ -42,7 +44,7 @@ defmodule Cryppo do
   defp find_strategy(strategy) do
     case strategy do
       :aes_256_gcm -> {:ok, Aes256gcm}
-      :rsa4096 -> {:ok, Rsa4096}
+      :rsa_4096 -> {:ok, Rsa4096}
       _ -> {:strategy_not_found, strategy}
     end
   end

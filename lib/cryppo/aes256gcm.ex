@@ -14,15 +14,16 @@ defmodule Cryppo.Aes256gcm do
   # like in ruby Cryppo
   @auth_tag_length 16
 
-  @spec generate_key :: Cryppo.EncryptionKey.t()
+  @spec generate_key :: EncryptionKey.t()
   def generate_key do
     @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new()
   end
 
-  @spec encrypt(binary, Cryppo.EncryptionKey.t()) :: Cryppo.EncryptedData.t()
+  @spec encrypt(binary, EncryptionKey.t()) :: EncryptedData.t()
   def encrypt(data, %EncryptionKey{} = key),
     do: encrypt(data, key, @additional_authenticated_data)
 
+  @spec encrypt(binary, EncryptionKey.t(), binary) :: EncryptedData.t()
   def encrypt(data, %EncryptionKey{key: key}, auth_data)
       when is_binary(data) and is_binary(auth_data) do
     iv = :crypto.strong_rand_bytes(@iv_byte_size)
