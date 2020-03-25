@@ -1,8 +1,7 @@
 defmodule Cryppo.Aes256gcm do
   alias Cryppo.{EncryptionKey, EncryptedData}
 
-  # same is the cipher in Erlang crypto
-  @strategy_name :aes_256_gcm
+  @erlang_crypto_cypher :aes_256_gcm
 
   @key_length 32
 
@@ -13,6 +12,9 @@ defmodule Cryppo.Aes256gcm do
   @additional_authenticated_data "none"
   # like in ruby Cryppo
   @auth_tag_length 16
+
+  @spec strategy_name :: binary
+  def strategy_name, do: "Aes256Gcm"
 
   @spec generate_key :: EncryptionKey.t()
   def generate_key do
@@ -30,7 +32,7 @@ defmodule Cryppo.Aes256gcm do
 
     {encrypted, auth_tag} =
       :crypto.crypto_one_time_aead(
-        @strategy_name,
+        @erlang_crypto_cypher,
         key,
         iv,
         data,
@@ -40,7 +42,7 @@ defmodule Cryppo.Aes256gcm do
       )
 
     EncryptedData.new(
-      @strategy_name,
+      __MODULE__,
       encrypted,
       iv: iv,
       auth_tag: auth_tag,
@@ -59,7 +61,7 @@ defmodule Cryppo.Aes256gcm do
 
   def decrypt(
         %EncryptedData{
-          encryption_strategy: @strategy_name,
+          encryption_strategy_module: __MODULE__,
           encrypted_data: encrypted_data,
           encryption_artefacts: %{iv: iv, auth_tag: auth_tag, auth_data: auth_data}
         },
@@ -67,7 +69,7 @@ defmodule Cryppo.Aes256gcm do
       ) do
     decrypted =
       :crypto.crypto_one_time_aead(
-        @strategy_name,
+        @erlang_crypto_cypher,
         key,
         iv,
         encrypted_data,

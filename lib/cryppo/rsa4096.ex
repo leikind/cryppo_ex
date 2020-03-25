@@ -1,8 +1,6 @@
 defmodule Cryppo.Rsa4096 do
   alias Cryppo.{EncryptionKey, EncryptedData}
 
-  @strategy_name :rsa_4096
-
   # 4096 is the key size in ruby Cryppo
   @size 4_096
   # 65537 is the default in OpenSSL, and hence in ruby Cryppo
@@ -18,6 +16,9 @@ defmodule Cryppo.Rsa4096 do
     |> EncryptionKey.new()
   end
 
+  @spec strategy_name :: binary
+  def strategy_name, do: "Rsa4096"
+
   @spec encrypt(binary, EncryptionKey.t()) :: EncryptedData.t()
   def encrypt(data, %EncryptionKey{key: private_key})
       when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey do
@@ -28,13 +29,13 @@ defmodule Cryppo.Rsa4096 do
 
     encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
 
-    EncryptedData.new(@strategy_name, encrypted)
+    EncryptedData.new(__MODULE__, encrypted)
   end
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) :: {:ok, binary}
   def decrypt(
         %EncryptedData{
-          encryption_strategy: @strategy_name,
+          encryption_strategy_module: __MODULE__,
           encrypted_data: encrypted_data
         },
         %EncryptionKey{key: private_key}
