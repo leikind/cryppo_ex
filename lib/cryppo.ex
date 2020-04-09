@@ -3,7 +3,7 @@ defmodule Cryppo do
   to do
   """
 
-  alias Cryppo.{Aes256gcm, Rsa4096, EncryptionKey, EncryptedData}
+  alias Cryppo.{Aes256gcm, Rsa4096, EncryptionKey, EncryptedData, Yaml}
 
   @type encryption_strategy() :: binary
   @type encryption_strategy_module() :: atom
@@ -49,6 +49,41 @@ defmodule Cryppo do
     end
   end
 
+  def load(serialized) when is_binary(serialized) do
+    case String.split(serialized, ".") do
+      [
+        _strategy_name,
+        _encrypted_data_base64,
+        _encryption_artefacts_base64,
+        _key_derivation_strategy_name,
+        _derivation_artefacts_base64
+      ] ->
+        {:key_derivation_case}
+
+      [
+        strategy_name,
+        encrypted_data_base64,
+        encryption_artefacts_base64
+      ] ->
+        case find_strategy(strategy_name) do
+          {:ok, encryption_strategy_mod} ->
+            {:ok, encrypted_data} = Base.url_decode64(encrypted_data_base64)
+            # catch this error too
+            {:ok, encryption_artefacts_base64} = Base.url_decode64(encryption_artefacts_base64)
+
+            encryption_artefacts = Yaml.decode(encryption_artefacts_base64)
+
+            EncryptedData.new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
+
+          err ->
+            err
+        end
+
+      _ ->
+        {:error, :invalid_serialization_value}
+    end
+  end
+
   @spec serialize(EncryptedData.t()) :: binary
   def serialize(%EncryptedData{
         encryption_strategy_module: mod,
@@ -59,44 +94,10 @@ defmodule Cryppo do
     encrypted_data_base64 = encrypted_data |> Base.url_encode64(padding: true)
 
     encryption_artefacts_base64 =
-      encryption_artefacts |> to_yaml() |> Base.url_encode64(padding: true)
+      encryption_artefacts |> Yaml.encode() |> Base.url_encode64(padding: true)
 
     # use IO lists, Luke!!
     # iolist_to_binary/1
     [strategy_name, encrypted_data_base64, encryption_artefacts_base64] |> Enum.join(".")
-  end
-
-  defp to_yaml(%{} = map) do
-    if map == %{} do
-      "--- {}\n"
-    else
-      "---\n" <> to_yaml(map, "") <> "\n"
-    end
-  end
-
-  defp to_yaml(%{} = map, indentation) do
-    map
-    |> Enum.map(fn {key, value} ->
-      next_indentation = "#{indentation}  "
-
-      cond do
-        is_bitstring(value) ->
-          if String.valid?(value) do
-            "#{indentation}#{key}: #{value}"
-          else
-            value_base64 = value |> Base.encode64()
-            # refactor this mess
-            "#{indentation}#{key}: !binary |-\n#{next_indentation}#{value_base64}"
-          end
-
-        is_number(value) ->
-          "#{indentation}#{key}: #{value}"
-
-        is_map(value) ->
-          # refactor this mess
-          "#{indentation}#{key}:\n#{to_yaml(value, next_indentation)}"
-      end
-    end)
-    |> Enum.join("\n")
   end
 end

@@ -54,10 +54,14 @@ defmodule CryppoTest do
 
     encrypted_data = Cryppo.encrypt(strategy, key, plain_data)
 
-    encrypted_data |> Cryppo.serialize() |> IO.inspect()
+    serialized = encrypted_data |> Cryppo.serialize()
 
-    # {:ok, decrypted_data} = Cryppo.decrypt(encrypted_data, key)
+    restored_encrypted_data = Cryppo.load(serialized)
 
-    # assert decrypted_data == plain_data
+    assert encrypted_data == restored_encrypted_data
+
+    {:ok, decrypted_data} = Cryppo.decrypt(restored_encrypted_data, key)
+
+    assert decrypted_data == plain_data
   end
 end
