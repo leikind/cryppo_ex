@@ -7,7 +7,7 @@ defmodule Cryppo.Aes256gcm do
     AAD: "none"
   """
 
-  alias Cryppo.{EncryptionKey, EncryptedData}
+  use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
 
   @erlang_crypto_cypher :aes_256_gcm
 
@@ -21,21 +21,13 @@ defmodule Cryppo.Aes256gcm do
   # like in ruby Cryppo
   @auth_tag_length 16
 
-  @spec strategy_name :: binary
-  def strategy_name, do: "Aes256Gcm"
-
   @spec generate_key :: EncryptionKey.t()
   def generate_key do
-    @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new()
+    @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new(__MODULE__)
   end
 
-  @spec encrypt(binary, EncryptionKey.t()) :: EncryptedData.t() | :encryption_error
-  def encrypt(data, %EncryptionKey{} = key),
-    do: encrypt(data, key, @additional_authenticated_data)
-
-  @spec encrypt(binary, EncryptionKey.t(), binary) :: EncryptedData.t()
-  def encrypt(data, %EncryptionKey{key: key}, auth_data)
-      when is_binary(data) and is_binary(auth_data) and is_binary(key) do
+  @spec encrypt(binary, EncryptionKey.rsa_key_tuple()) :: :encryption_error | {:ok, binary, list}
+  defp encrypt(data, key) when is_binary(data) and is_binary(key) do
     iv = :crypto.strong_rand_bytes(@iv_byte_size)
 
     {encrypted, auth_tag} =
@@ -44,21 +36,15 @@ defmodule Cryppo.Aes256gcm do
         key,
         iv,
         data,
-        auth_data,
+        @additional_authenticated_data,
         @auth_tag_length,
         true
       )
 
-    EncryptedData.new(
-      __MODULE__,
-      encrypted,
-      iv: iv,
-      auth_tag: auth_tag,
-      auth_data: auth_data
-    )
+    {:ok, encrypted, iv: iv, auth_tag: auth_tag, auth_data: @additional_authenticated_data}
   end
 
-  def encrypt(_, _, _), do: :encryption_error
+  defp encrypt(_, _), do: :encryption_error
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) ::
           {:ok, binary} | {:error, binary | {binary, binary}}

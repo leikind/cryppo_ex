@@ -21,7 +21,7 @@ defmodule Cryppo do
   def encrypt(encryption_strategy, %EncryptionKey{} = key, data)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do
-      apply(mod, :encrypt, [data, key])
+      apply(mod, :run_encryption, [data, key])
     end
   end
 
@@ -32,6 +32,15 @@ defmodule Cryppo do
         %EncryptionKey{} = key
       ) do
     apply(mod, :decrypt, [encrypted_data, key])
+  end
+
+  def encrypt_with_derived_key(
+        _encryption_strategy_name,
+        _key_derivation_strategy_name,
+        _key,
+        _data
+      ) do
+    :todo
   end
 
   # code it with a macro

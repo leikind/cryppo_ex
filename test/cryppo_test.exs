@@ -3,8 +3,7 @@ defmodule CryppoTest do
 
   alias Cryppo.{EncryptionKey, EncryptedData}
 
-  @aes_encryption_strategies ["Aes256Gcm"]
-  @all_encryption_strategies ["Rsa4096" | @aes_encryption_strategies]
+  @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
   @plain_data "Hello world!"
 
@@ -102,12 +101,30 @@ defmodule CryppoTest do
     test "trying to encrypt with Aes256Gcm using a Rsa4096 key" do
       key = Cryppo.generate_encryption_key("Aes256Gcm")
 
-      assert Cryppo.encrypt("Rsa4096", key, @plain_data) == :encryption_error
+      assert Cryppo.encrypt("Rsa4096", key, @plain_data) ==
+               {:incompatible_key,
+                [submitted_key_strategy: Cryppo.Aes256gcm, encryption_strategy: Cryppo.Rsa4096]}
     end
 
     test "trying to encrypt with Rsa4096 using a Aes256Gcm key" do
       key = Cryppo.generate_encryption_key("Rsa4096")
-      assert Cryppo.encrypt("Aes256Gcm", key, @plain_data) == :encryption_error
+
+      assert Cryppo.encrypt("Aes256Gcm", key, @plain_data) ==
+               {:incompatible_key,
+                [submitted_key_strategy: Cryppo.Rsa4096, encryption_strategy: Cryppo.Aes256gcm]}
     end
+  end
+
+  @derivation_strategy_name "Pbkdf2Hmac"
+  @passphrase "my passphrase"
+
+  describe "Encryption / decryption with a derived key" do
+    _encrypted_data =
+      Cryppo.encrypt_with_derived_key(
+        "Aes256Gcm",
+        @derivation_strategy_name,
+        @passphrase,
+        @plain_data
+      )
   end
 end

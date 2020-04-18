@@ -6,7 +6,7 @@ defmodule Cryppo.Rsa4096 do
     Padding: rsa_pkcs1_oaep_padding
   """
 
-  alias Cryppo.{EncryptionKey, EncryptedData}
+  use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
 
   # 4096 is the key size in ruby Cryppo
   @size 4_096
@@ -20,15 +20,12 @@ defmodule Cryppo.Rsa4096 do
   def generate_key do
     {:rsa, @size, @exponent}
     |> :public_key.generate_key()
-    |> EncryptionKey.new()
+    |> EncryptionKey.new(__MODULE__)
   end
 
-  @spec strategy_name :: binary
-  def strategy_name, do: "Rsa4096"
-
-  @spec encrypt(binary, EncryptionKey.t()) :: EncryptedData.t()
-  def encrypt(data, %EncryptionKey{key: private_key})
-      when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey do
+  @spec encrypt(binary, EncryptionKey.binary_key()) :: :encryption_error | {:ok, binary, list}
+  defp encrypt(data, private_key)
+       when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey do
     public_modulus = private_key |> elem(2)
     public_exponent = private_key |> elem(3)
 
@@ -36,10 +33,10 @@ defmodule Cryppo.Rsa4096 do
 
     encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
 
-    EncryptedData.new(__MODULE__, encrypted)
+    {:ok, encrypted, []}
   end
 
-  def encrypt(_, _), do: :encryption_error
+  defp encrypt(_, _), do: :encryption_error
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) :: {:ok, binary}
   def decrypt(
