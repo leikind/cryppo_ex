@@ -1,4 +1,8 @@
 defmodule Cryppo.EncryptionKey do
+  @moduledoc """
+  A struct to hold encryption keys of various encryption strategies
+  """
+
   @type binary_key() :: binary()
   @type rsa_key_tuple() :: tuple()
   @type t :: %__MODULE__{key: binary_key() | rsa_key_tuple()}

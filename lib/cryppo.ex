@@ -1,6 +1,6 @@
 defmodule Cryppo do
   @moduledoc """
-  to do
+    Main public API of Cryppo.
   """
 
   alias Cryppo.{Aes256gcm, Rsa4096, EncryptionKey, EncryptedData, Yaml}
@@ -17,7 +17,7 @@ defmodule Cryppo do
   end
 
   @spec encrypt(encryption_strategy, EncryptionKey.t(), binary) ::
-          :ok | {:strategy_not_found, atom}
+          :ok | {:unsupported_encryption_strategy, atom}
   def encrypt(encryption_strategy, %EncryptionKey{} = key, data)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do
@@ -45,7 +45,7 @@ defmodule Cryppo do
     case encryption_strategy do
       "Aes256Gcm" -> {:ok, Aes256gcm}
       "Rsa4096" -> {:ok, Rsa4096}
-      _ -> {:strategy_not_found, encryption_strategy}
+      _ -> {:unsupported_encryption_strategy, encryption_strategy}
     end
   end
 
@@ -58,6 +58,7 @@ defmodule Cryppo do
         _key_derivation_strategy_name,
         _derivation_artefacts_base64
       ] ->
+        # TODO
         {:key_derivation_case}
 
       [

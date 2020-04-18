@@ -1,4 +1,11 @@
 defmodule Cryppo.Rsa4096 do
+  @moduledoc """
+    Encryption Strategy RSA 4096.
+    Key length 4096
+    Exponents: 65537
+    Padding: rsa_pkcs1_oaep_padding
+  """
+
   alias Cryppo.{EncryptionKey, EncryptedData}
 
   # 4096 is the key size in ruby Cryppo
@@ -32,6 +39,8 @@ defmodule Cryppo.Rsa4096 do
     EncryptedData.new(__MODULE__, encrypted)
   end
 
+  def encrypt(_, _), do: :encryption_error
+
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) :: {:ok, binary}
   def decrypt(
         %EncryptedData{
@@ -40,11 +49,14 @@ defmodule Cryppo.Rsa4096 do
         },
         %EncryptionKey{key: private_key}
       )
-      when is_binary(encrypted_data) and elem(private_key, 0) == :RSAPrivateKey do
-    decrypted =
-      encrypted_data
-      |> :public_key.decrypt_private(private_key, rsa_padding: @padding)
-
-    {:ok, decrypted}
+      when is_binary(encrypted_data) do
+    try do
+      decrypted = :public_key.decrypt_private(encrypted_data, private_key, rsa_padding: @padding)
+      {:ok, decrypted}
+    rescue
+      ErlangError -> :decryption_error
+    end
   end
+
+  def decrypt(_, _), do: :decryption_error
 end

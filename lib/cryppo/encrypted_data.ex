@@ -1,4 +1,9 @@
 defmodule Cryppo.EncryptedData do
+  @moduledoc """
+  A struct to hold encrypted tagged with the encryption strategy.
+  Can also contain encryption artefacts if they are part of the  encryption strategy.
+  """
+
   @type t :: %__MODULE__{
           encryption_strategy_module: Cryppo.encryption_strategy_module(),
           encrypted_data: binary,

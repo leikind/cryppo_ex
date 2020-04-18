@@ -1,4 +1,12 @@
 defmodule Cryppo.Aes256gcm do
+  @moduledoc """
+    Encryption Strategy AES 256 GCM (Galois/Counter Mode).
+    Key length: 32 bytes.
+    IV length: 12 bytes.
+    Auth tag length: 16 bytes.
+    AAD: "none"
+  """
+
   alias Cryppo.{EncryptionKey, EncryptedData}
 
   @erlang_crypto_cypher :aes_256_gcm
@@ -21,13 +29,13 @@ defmodule Cryppo.Aes256gcm do
     @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new()
   end
 
-  @spec encrypt(binary, EncryptionKey.t()) :: EncryptedData.t()
+  @spec encrypt(binary, EncryptionKey.t()) :: EncryptedData.t() | :encryption_error
   def encrypt(data, %EncryptionKey{} = key),
     do: encrypt(data, key, @additional_authenticated_data)
 
   @spec encrypt(binary, EncryptionKey.t(), binary) :: EncryptedData.t()
   def encrypt(data, %EncryptionKey{key: key}, auth_data)
-      when is_binary(data) and is_binary(auth_data) do
+      when is_binary(data) and is_binary(auth_data) and is_binary(key) do
     iv = :crypto.strong_rand_bytes(@iv_byte_size)
 
     {encrypted, auth_tag} =
@@ -50,15 +58,10 @@ defmodule Cryppo.Aes256gcm do
     )
   end
 
+  def encrypt(_, _, _), do: :encryption_error
+
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) ::
           {:ok, binary} | {:error, binary | {binary, binary}}
-  def decrypt(
-        %EncryptedData{encryption_artefacts: %{auth_tag: auth_tag}},
-        %EncryptionKey{}
-      )
-      when byte_size(auth_tag) != @auth_tag_length,
-      do: {:error, "auth_tag is not 16 bytes in length"}
-
   def decrypt(
         %EncryptedData{
           encryption_strategy_module: __MODULE__,
@@ -66,7 +69,9 @@ defmodule Cryppo.Aes256gcm do
           encryption_artefacts: %{iv: iv, auth_tag: auth_tag, auth_data: auth_data}
         },
         %EncryptionKey{key: key}
-      ) do
+      )
+      when is_binary(encrypted_data) and is_binary(key) and
+             byte_size(auth_tag) == @auth_tag_length do
     decrypted =
       :crypto.crypto_one_time_aead(
         @erlang_crypto_cypher,
@@ -79,9 +84,11 @@ defmodule Cryppo.Aes256gcm do
       )
 
     case decrypted do
-      :error -> {:error, "decryption error"}
+      :error -> :decryption_error
       decrypted_data when is_binary(decrypted_data) -> {:ok, decrypted_data}
-      {ch1, ch2} -> {:error, {ch1, ch2}}
+      {ch1, ch2} -> {:decryption_error, {ch1, ch2}}
     end
   end
+
+  def decrypt(_, _), do: :decryption_error
 end
