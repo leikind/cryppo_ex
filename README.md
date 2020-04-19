@@ -19,3 +19,11 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 
+
+## TODO
+
+* encryption / decryption with key derivation
+* RSA signatures
+* Command line interface
+* Maybe: implement Cryppo.encrypt/2 which would also generate the key like in the typescript port
+* Add functions which list (1) available encryption strategies (2) available key derivation strategies

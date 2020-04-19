@@ -59,7 +59,9 @@ defmodule Cryppo.EncryptionStrategy do
         decrypt(encrypted_data, encryption_key)
       end
 
-      def run_decryption(%EncryptedData{encryption_strategy_module: mod}, _encryption_key) do
+      def run_decryption(%EncryptedData{encryption_strategy_module: __MODULE__}, %EncryptionKey{
+            encryption_strategy_module: mod
+          }) do
         {:incompatible_key, submitted_key_strategy: mod, encryption_strategy: __MODULE__}
       end
     end

@@ -1,7 +1,7 @@
 defmodule CryppoTest do
   use ExUnit.Case
 
-  alias Cryppo.{EncryptedData, EncryptionKey}
+  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, EncryptionKey}
 
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
@@ -66,7 +66,7 @@ defmodule CryppoTest do
 
       assert Cryppo.decrypt(encrypted_data, wrong_key) ==
                {:incompatible_key,
-                [submitted_key_strategy: Cryppo.Rsa4096, encryption_strategy: Cryppo.Rsa4096]}
+                [submitted_key_strategy: Cryppo.Aes256gcm, encryption_strategy: Cryppo.Rsa4096]}
     end
 
     test "trying to feed an Rsa4096 key to a Aes256Gcm decryption" do
@@ -77,7 +77,7 @@ defmodule CryppoTest do
 
       assert Cryppo.decrypt(encrypted_data, wrong_key) ==
                {:incompatible_key,
-                [submitted_key_strategy: Cryppo.Aes256gcm, encryption_strategy: Cryppo.Aes256gcm]}
+                [submitted_key_strategy: Cryppo.Rsa4096, encryption_strategy: Cryppo.Aes256gcm]}
     end
 
     test "trying to feed a random string as a key to a Rsa4096 decryption" do
@@ -119,16 +119,22 @@ defmodule CryppoTest do
     end
   end
 
-  @derivation_strategy_name "Pbkdf2Hmac"
-  @passphrase "my passphrase"
-
-  describe "Encryption / decryption with a derived key" do
-    _encrypted_data =
+  test "Encryption / decryption with a derived key" do
+    encrypted_data =
       Cryppo.encrypt_with_derived_key(
         "Aes256Gcm",
-        @derivation_strategy_name,
-        @passphrase,
+        "Pbkdf2Hmac",
+        "my passphrase",
         @plain_data
       )
+
+    assert(encrypted_data)
+
+    # encrypted_data |> IO.inspect()
+
+    assert %EncryptedDataWithDerivedKey{} = encrypted_data,
+           "encrypted_data is a EncryptedDataWithDerivedKey struct"
+
+    assert Cryppo.decrypt_with_derived_key("my passphrase", encrypted_data) == {:ok, @plain_data}
   end
 end
