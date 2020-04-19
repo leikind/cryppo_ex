@@ -1,7 +1,7 @@
 defmodule CryppoTest do
   use ExUnit.Case
 
-  alias Cryppo.{EncryptionKey, EncryptedData}
+  alias Cryppo.{EncryptedData, EncryptionKey}
 
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
@@ -64,7 +64,9 @@ defmodule CryppoTest do
 
       wrong_key = Cryppo.generate_encryption_key("Aes256Gcm")
 
-      assert Cryppo.decrypt(encrypted_data, wrong_key) == :decryption_error
+      assert Cryppo.decrypt(encrypted_data, wrong_key) ==
+               {:incompatible_key,
+                [submitted_key_strategy: Cryppo.Rsa4096, encryption_strategy: Cryppo.Rsa4096]}
     end
 
     test "trying to feed an Rsa4096 key to a Aes256Gcm decryption" do
@@ -73,7 +75,9 @@ defmodule CryppoTest do
 
       wrong_key = Cryppo.generate_encryption_key("Rsa4096")
 
-      assert Cryppo.decrypt(encrypted_data, wrong_key) == :decryption_error
+      assert Cryppo.decrypt(encrypted_data, wrong_key) ==
+               {:incompatible_key,
+                [submitted_key_strategy: Cryppo.Aes256gcm, encryption_strategy: Cryppo.Aes256gcm]}
     end
 
     test "trying to feed a random string as a key to a Rsa4096 decryption" do

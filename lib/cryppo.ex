@@ -3,7 +3,7 @@ defmodule Cryppo do
     Main public API of Cryppo.
   """
 
-  alias Cryppo.{Aes256gcm, Rsa4096, EncryptionKey, EncryptedData, Yaml}
+  alias Cryppo.{Aes256gcm, EncryptedData, EncryptionKey, Rsa4096, Yaml}
 
   @type encryption_strategy() :: binary
   @type encryption_strategy_module() :: atom
@@ -17,7 +17,10 @@ defmodule Cryppo do
   end
 
   @spec encrypt(encryption_strategy, EncryptionKey.t(), binary) ::
-          :ok | {:unsupported_encryption_strategy, atom}
+          EncryptedData.t()
+          | {:unsupported_encryption_strategy, atom}
+          | :encryption_error
+          | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
   def encrypt(encryption_strategy, %EncryptionKey{} = key, data)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do
@@ -26,12 +29,15 @@ defmodule Cryppo do
   end
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) ::
-          {:ok, binary} | {:error, binary | {binary, binary}}
+          {:ok, binary}
+          | :decryption_error
+          | {:decryption_error, {any, any}}
+          | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
   def decrypt(
         %EncryptedData{encryption_strategy_module: mod} = encrypted_data,
         %EncryptionKey{} = key
       ) do
-    apply(mod, :decrypt, [encrypted_data, key])
+    apply(mod, :run_decryption, [encrypted_data, key])
   end
 
   def encrypt_with_derived_key(
@@ -78,7 +84,6 @@ defmodule Cryppo do
         case find_strategy(strategy_name) do
           {:ok, encryption_strategy_mod} ->
             {:ok, encrypted_data} = Base.url_decode64(encrypted_data_base64)
-            # catch this error too
             {:ok, encryption_artefacts_base64} = Base.url_decode64(encryption_artefacts_base64)
 
             encryption_artefacts = Yaml.decode(encryption_artefacts_base64)
@@ -106,8 +111,6 @@ defmodule Cryppo do
     encryption_artefacts_base64 =
       encryption_artefacts |> Yaml.encode() |> Base.url_encode64(padding: true)
 
-    # use IO lists, Luke!!
-    # iolist_to_binary/1
     [strategy_name, encrypted_data_base64, encryption_artefacts_base64] |> Enum.join(".")
   end
 end

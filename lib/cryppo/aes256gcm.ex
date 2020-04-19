@@ -26,8 +26,10 @@ defmodule Cryppo.Aes256gcm do
     @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new(__MODULE__)
   end
 
-  @spec encrypt(binary, EncryptionKey.rsa_key_tuple()) :: :encryption_error | {:ok, binary, list}
-  defp encrypt(data, key) when is_binary(data) and is_binary(key) do
+  @spec encrypt(binary, EncryptionKey.t()) ::
+          {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
+  @impl EncryptionStrategy
+  def encrypt(data, %EncryptionKey{key: key}) when is_binary(data) and is_binary(key) do
     iv = :crypto.strong_rand_bytes(@iv_byte_size)
 
     {encrypted, auth_tag} =
@@ -44,13 +46,13 @@ defmodule Cryppo.Aes256gcm do
     {:ok, encrypted, iv: iv, auth_tag: auth_tag, auth_data: @additional_authenticated_data}
   end
 
-  defp encrypt(_, _), do: :encryption_error
+  def encrypt(_, _), do: :encryption_error
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) ::
-          {:ok, binary} | {:error, binary | {binary, binary}}
+          {:ok, binary} | :decryption_error | {:decryption_error, {any, any}}
+  @impl EncryptionStrategy
   def decrypt(
         %EncryptedData{
-          encryption_strategy_module: __MODULE__,
           encrypted_data: encrypted_data,
           encryption_artefacts: %{iv: iv, auth_tag: auth_tag, auth_data: auth_data}
         },
