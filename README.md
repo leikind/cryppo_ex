@@ -1,6 +1,6 @@
 # CryppoEx
 
-**TODO: Add description**
+**TODO: Add a tutorial**
 
 ## Installation
 
