@@ -127,39 +127,62 @@ defmodule Cryppo do
   def load(serialized) when is_binary(serialized) do
     case String.split(serialized, ".") do
       [
-        _strategy_name,
-        _encrypted_data_base64,
-        _encryption_artefacts_base64,
-        _key_derivation_strategy_name,
-        _derivation_artefacts_base64
+        strategy_name,
+        encrypted_data_base64,
+        encryption_artefacts_base64,
+        key_derivation_strategy,
+        derivation_artefacts_base64
       ] ->
-        # TODO
-        {:key_derivation_case}
+        with {:ok, key_derivation_mod} <- find_key_derivation_strategy(key_derivation_strategy),
+             {:ok, derivation_artefacts_yaml} = Base.url_decode64(derivation_artefacts_base64),
+             derivation_artefacts = Yaml.decode(derivation_artefacts_yaml),
+             # TODO deal with invalid derivation_artefacts
+             %{"iv" => salt, "i" => iterations, "l" => length} <- derivation_artefacts do
+          encrypted_data =
+            to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64)
+
+          hash = apply(key_derivation_mod, :hash_function, [])
+
+          derived_key = %DerivedKey{
+            encryption_key: nil,
+            key_derivation_strategy: key_derivation_mod,
+            salt: salt,
+            iter: iterations,
+            length: length,
+            hash: hash
+          }
+
+          %EncryptedDataWithDerivedKey{encrypted_data: encrypted_data, derived_key: derived_key}
+        end
 
       [
         strategy_name,
         encrypted_data_base64,
         encryption_artefacts_base64
       ] ->
-        case find_strategy(strategy_name) do
-          {:ok, encryption_strategy_mod} ->
-            {:ok, encrypted_data} = Base.url_decode64(encrypted_data_base64)
-            {:ok, encryption_artefacts_base64} = Base.url_decode64(encryption_artefacts_base64)
-
-            encryption_artefacts = Yaml.decode(encryption_artefacts_base64)
-
-            EncryptedData.new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
-
-          err ->
-            err
-        end
+        to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64)
 
       _ ->
         {:error, :invalid_serialization_value}
     end
   end
 
-  @spec serialize(EncryptedData.t()) :: binary
+  def to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
+    case find_strategy(strategy_name) do
+      {:ok, encryption_strategy_mod} ->
+        {:ok, encrypted_data} = Base.url_decode64(encrypted_data_base64)
+        {:ok, encryption_artefacts_base64} = Base.url_decode64(encryption_artefacts_base64)
+
+        encryption_artefacts = Yaml.decode(encryption_artefacts_base64)
+
+        EncryptedData.new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
+
+      err ->
+        err
+    end
+  end
+
+  @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | DerivedKey.t()) :: binary
   def serialize(%EncryptedData{
         encryption_strategy_module: mod,
         encrypted_data: encrypted_data,
@@ -172,5 +195,28 @@ defmodule Cryppo do
       encryption_artefacts |> Yaml.encode() |> Base.url_encode64(padding: true)
 
     [strategy_name, encrypted_data_base64, encryption_artefacts_base64] |> Enum.join(".")
+  end
+
+  def serialize(%EncryptedDataWithDerivedKey{
+        derived_key: %DerivedKey{} = derived_key,
+        encrypted_data: %EncryptedData{} = encrypted_data
+      }) do
+    [serialize(encrypted_data), serialize(derived_key)] |> Enum.join(".")
+  end
+
+  def serialize(%DerivedKey{
+        key_derivation_strategy: key_derivation_mod,
+        salt: salt,
+        iter: iterations,
+        length: length
+      }) do
+    key_derivation_mod = apply(key_derivation_mod, :strategy_name, [])
+
+    derivation_artefacts =
+      %{"iv" => salt, "i" => iterations, "l" => length}
+      |> Yaml.encode()
+      |> Base.url_encode64(padding: true)
+
+    [key_derivation_mod, derivation_artefacts] |> Enum.join(".")
   end
 end

@@ -26,6 +26,12 @@ defmodule Cryppo.Pbkdf2hmac do
     :ok
   end
 
+  @spec strategy_name :: binary
+  def strategy_name, do: "Pbkdf2Hmac"
+
+  @spec hash_function :: binary
+  def hash_function, do: "SHA256"
+
   def generate_derived_key(passphrase) do
     salt = make_salt()
     iterations = make_iterations()
@@ -71,7 +77,7 @@ defmodule Cryppo.Pbkdf2hmac do
       salt: salt,
       iter: iterations,
       length: key_length,
-      hash: "SHA256"
+      hash: hash_function()
     }
   end
 
