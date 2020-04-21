@@ -76,6 +76,11 @@ defmodule Cryppo do
     end
   end
 
+  @spec decrypt_with_derived_key(binary, Cryppo.EncryptedDataWithDerivedKey.t()) ::
+          {:ok, binary, DerivedKey.t()}
+          | :decryption_error
+          | {:decryption_error, {any, any}}
+          | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
   def decrypt_with_derived_key(
         passphrase,
         %EncryptedDataWithDerivedKey{
@@ -90,13 +95,19 @@ defmodule Cryppo do
         }
       )
       when is_binary(passphrase) do
-    %DerivedKey{encryption_key: key} =
+    derived_key =
+      %DerivedKey{encryption_key: key} =
       apply(key_derivation_mod, :build_derived_key, [passphrase, derived_key])
 
     key_with_encryption_strategy = %{key | encryption_strategy_module: encryption_strategy_mod}
 
-    # maybe this could return the derived key, too
-    apply(encryption_strategy_mod, :run_decryption, [encrypted_data, key_with_encryption_strategy])
+    with {:ok, decrypted} <-
+           apply(encryption_strategy_mod, :run_decryption, [
+             encrypted_data,
+             key_with_encryption_strategy
+           ]) do
+      {:ok, decrypted, derived_key}
+    end
   end
 
   # probably code it with a macro
@@ -124,6 +135,11 @@ defmodule Cryppo do
     end
   end
 
+  @spec load(binary) ::
+          EncryptedDataWithDerivedKey.t()
+          | EncryptedData.t()
+          | {:unsupported_encryption_strategy, binary}
+          | {:error, :invalid_serialization_value}
   def load(serialized) when is_binary(serialized) do
     case String.split(serialized, ".") do
       [
@@ -167,7 +183,9 @@ defmodule Cryppo do
     end
   end
 
-  def to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
+  @spec to_encrypted_data(encryption_strategy(), binary, binary) ::
+          {:unsupported_encryption_strategy, binary} | EncryptedData.t()
+  defp to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
     case find_strategy(strategy_name) do
       {:ok, encryption_strategy_mod} ->
         {:ok, encrypted_data} = Base.url_decode64(encrypted_data_base64)
@@ -182,7 +200,8 @@ defmodule Cryppo do
     end
   end
 
-  @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | DerivedKey.t()) :: binary
+  # TODO protocol serializable and move to structs
+  @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t()) :: binary
   def serialize(%EncryptedData{
         encryption_strategy_module: mod,
         encrypted_data: encrypted_data,
@@ -201,15 +220,16 @@ defmodule Cryppo do
         derived_key: %DerivedKey{} = derived_key,
         encrypted_data: %EncryptedData{} = encrypted_data
       }) do
-    [serialize(encrypted_data), serialize(derived_key)] |> Enum.join(".")
+    [serialize(encrypted_data), serialize_derived_key(derived_key)] |> Enum.join(".")
   end
 
-  def serialize(%DerivedKey{
-        key_derivation_strategy: key_derivation_mod,
-        salt: salt,
-        iter: iterations,
-        length: length
-      }) do
+  @spec serialize_derived_key(DerivedKey.t()) :: binary
+  defp serialize_derived_key(%DerivedKey{
+         key_derivation_strategy: key_derivation_mod,
+         salt: salt,
+         iter: iterations,
+         length: length
+       }) do
     key_derivation_mod = apply(key_derivation_mod, :strategy_name, [])
 
     derivation_artefacts =

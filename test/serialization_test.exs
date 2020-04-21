@@ -40,7 +40,9 @@ defmodule SerializationTest do
 
     loaded_encrypted_data = Cryppo.load(serialized)
 
-    assert Cryppo.decrypt_with_derived_key("my passphrase", loaded_encrypted_data) ==
-             {:ok, "Hello world!"}
+    {:ok, decrypted, _derived_key} =
+      Cryppo.decrypt_with_derived_key("my passphrase", loaded_encrypted_data)
+
+    assert decrypted == @plain_data
   end
 end

@@ -32,36 +32,35 @@ defmodule Cryppo.Pbkdf2hmac do
   @spec hash_function :: binary
   def hash_function, do: "SHA256"
 
+  @spec generate_derived_key(binary) :: DerivedKey.t()
   def generate_derived_key(passphrase) do
     salt = make_salt()
     iterations = make_iterations()
-
-    {:ok, pdk} =
-      :pbkdf2.pbkdf2(
-        {:hmac, :sha256},
-        passphrase,
-        salt,
-        iterations,
-        @key_length
-      )
-
-    %DerivedKey{
-      encryption_key: EncryptionKey.new(pdk),
-      key_derivation_strategy: __MODULE__,
-      salt: salt,
-      iter: iterations,
-      length: @key_length,
-      hash: "SHA256"
-    }
+    passphrase |> derive_and_build_derived_key(salt, iterations, @key_length)
   end
 
-  # another clause to reuse an existing key in DerivedKey
+  @spec build_derived_key(binary, DerivedKey.t()) :: DerivedKey.t()
+  def build_derived_key(
+        _passphrase,
+        %DerivedKey{
+          encryption_key: %EncryptionKey{key: key}
+        } = derived_key
+      )
+      when is_binary(key) do
+    # derived_key already has the encryption key, we do nothing
+    derived_key
+  end
+
   def build_derived_key(passphrase, %DerivedKey{
         salt: salt,
         iter: iterations,
         length: key_length
       }) do
-    # TODO DRY
+    passphrase |> derive_and_build_derived_key(salt, iterations, key_length)
+  end
+
+  @spec derive_and_build_derived_key(binary, binary, integer, integer) :: DerivedKey.t()
+  defp derive_and_build_derived_key(passphrase, salt, iterations, key_length) do
     {:ok, pdk} =
       :pbkdf2.pbkdf2(
         {:hmac, :sha256},
@@ -82,9 +81,11 @@ defmodule Cryppo.Pbkdf2hmac do
   end
 
   # provide some randomisation to the number of iterations
+  @spec make_iterations :: pos_integer
   defp make_iterations do
     @min_iterations + :rand.uniform(@variance)
   end
 
+  @spec make_salt :: binary
   defp make_salt, do: :crypto.strong_rand_bytes(@salt_length)
 end

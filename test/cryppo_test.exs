@@ -18,29 +18,30 @@ defmodule CryppoTest do
     end
   end
 
-  test "try to generate a key for a an invalid key generation strategy" do
+  test "try to generate a key for an invalid key generation strategy" do
     assert Cryppo.generate_encryption_key("i-dont-exist") ==
              {:unsupported_encryption_strategy, "i-dont-exist"}
   end
 
-  test "Encryption / decryption using all available strategies" do
-    @plain_data = "Hello world!"
+  describe "Encryption / decryption with a generated key" do
+    test "Encryption / decryption using all available strategies" do
+      @plain_data = "Hello world!"
 
-    for encryption_strategy <- @all_encryption_strategies do
-      key = Cryppo.generate_encryption_key(encryption_strategy)
+      for encryption_strategy <- @all_encryption_strategies do
+        key = Cryppo.generate_encryption_key(encryption_strategy)
 
-      encrypted_data = Cryppo.encrypt(encryption_strategy, key, @plain_data)
+        encrypted_data = Cryppo.encrypt(encryption_strategy, key, @plain_data)
 
-      assert %EncryptedData{} = encrypted_data,
-             "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
+        assert %EncryptedData{} = encrypted_data,
+               "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
 
-      {:ok, decrypted_data} = Cryppo.decrypt(encrypted_data, key)
+        {:ok, decrypted_data} = Cryppo.decrypt(encrypted_data, key)
 
-      assert decrypted_data == @plain_data, "decryption with #{encryption_strategy} is successful"
+        assert decrypted_data == @plain_data,
+               "decryption with #{encryption_strategy} is successful"
+      end
     end
-  end
 
-  describe "breaking stuff" do
     test "Decrypting using the wrong key of the same strategy" do
       @plain_data = "Hello world!"
 
@@ -130,11 +131,49 @@ defmodule CryppoTest do
 
     assert(encrypted_data)
 
-    # encrypted_data |> IO.inspect()
+    assert %EncryptedDataWithDerivedKey{} = encrypted_data,
+           "encrypted_data is a EncryptedDataWithDerivedKey struct"
+
+    encrypted_data_without_key = %{
+      encrypted_data
+      | derived_key: %{encrypted_data.derived_key | encryption_key: nil}
+    }
+
+    assert encrypted_data_without_key.derived_key.encryption_key == nil,
+           "encrypted_data struct contains no key"
+
+    {:ok, decrypted, derived_key2} =
+      Cryppo.decrypt_with_derived_key("my passphrase", encrypted_data)
+
+    assert @plain_data == decrypted
+
+    assert derived_key2.encryption_key, "key has been derived again"
+  end
+
+  test "Reusing a key already present in EncryptedDataWithDerivedKey" do
+    encrypted_data =
+      Cryppo.encrypt_with_derived_key(
+        "Aes256Gcm",
+        "Pbkdf2Hmac",
+        "my passphrase",
+        @plain_data
+      )
+
+    assert(encrypted_data)
 
     assert %EncryptedDataWithDerivedKey{} = encrypted_data,
            "encrypted_data is a EncryptedDataWithDerivedKey struct"
 
-    assert Cryppo.decrypt_with_derived_key("my passphrase", encrypted_data) == {:ok, @plain_data}
+    {:ok, decrypted, derived_key2} =
+      Cryppo.decrypt_with_derived_key("my passphrase", encrypted_data)
+
+    assert @plain_data == decrypted
+
+    assert derived_key2.encryption_key,
+           "key has not been derived again, it is the same key used for encryption"
+  end
+
+  describe "RSA signatures" do
+    # TODO
   end
 end
