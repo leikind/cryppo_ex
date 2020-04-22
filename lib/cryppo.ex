@@ -152,8 +152,8 @@ defmodule Cryppo do
         with {:ok, key_derivation_mod} <- find_key_derivation_strategy(key_derivation_strategy),
              {:ok, derivation_artefacts_yaml} = Base.url_decode64(derivation_artefacts_base64),
              derivation_artefacts = Yaml.decode(derivation_artefacts_yaml),
-             # TODO deal with invalid derivation_artefacts
-             %{"iv" => salt, "i" => iterations, "l" => length} <- derivation_artefacts do
+             {:ok, %{"iv" => salt, "i" => iterations, "l" => length}} <-
+               parse_derivation_artefacts(derivation_artefacts) do
           encrypted_data =
             to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64)
 
@@ -182,6 +182,10 @@ defmodule Cryppo do
         {:error, :invalid_serialization_value}
     end
   end
+
+  @spec parse_derivation_artefacts(any) :: {:error, :invalid_derivation_artefacts} | {:ok, map}
+  defp parse_derivation_artefacts(%{"iv" => _, "i" => _, "l" => _} = da), do: {:ok, da}
+  defp parse_derivation_artefacts(_), do: {:error, :invalid_derivation_artefacts}
 
   @spec to_encrypted_data(encryption_strategy(), binary, binary) ::
           {:unsupported_encryption_strategy, binary} | EncryptedData.t()
