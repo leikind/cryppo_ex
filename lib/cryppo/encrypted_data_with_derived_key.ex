@@ -3,7 +3,7 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
   A struct to hold a derived key struct and an encrypted data struct
   """
 
-  alias Cryppo.{DerivedKey, EncryptedData}
+  alias Cryppo.{DerivedKey, EncryptedData, Serialization}
 
   @type t :: %__MODULE__{
           encrypted_data: EncryptedData.t(),
@@ -12,4 +12,22 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
 
   @enforce_keys [:encrypted_data, :derived_key]
   defstruct [:encrypted_data, :derived_key]
+end
+
+defimpl Cryppo.Serialization, for: Cryppo.EncryptedDataWithDerivedKey do
+  alias Cryppo.{
+    DerivedKey,
+    EncryptedData,
+    EncryptedDataWithDerivedKey,
+    Serialization
+  }
+
+  @spec serialize(EncryptedDataWithDerivedKey.t()) :: binary
+  def serialize(%EncryptedDataWithDerivedKey{
+        derived_key: %DerivedKey{} = derived_key,
+        encrypted_data: %EncryptedData{} = encrypted_data
+      }) do
+    [Serialization.serialize(encrypted_data), Serialization.serialize(derived_key)]
+    |> Enum.join(".")
+  end
 end

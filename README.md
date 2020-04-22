@@ -28,5 +28,4 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 * check the compatibility with yaml with binaries from ruby, there can be a problem with the tag
 * behaviour for key derivation strategies just like for encryption strategies
 * proper readme
-* serialization protocol
 * Maybe: implement Cryppo.encrypt/2 which would also generate the key like in the typescript port

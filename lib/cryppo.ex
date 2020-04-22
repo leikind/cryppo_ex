@@ -11,6 +11,7 @@ defmodule Cryppo do
     EncryptionKey,
     Pbkdf2hmac,
     Rsa4096,
+    Serialization,
     Yaml
   }
 
@@ -204,43 +205,7 @@ defmodule Cryppo do
     end
   end
 
-  # TODO protocol serializable and move to structs
   @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t()) :: binary
-  def serialize(%EncryptedData{
-        encryption_strategy_module: mod,
-        encrypted_data: encrypted_data,
-        encryption_artefacts: encryption_artefacts
-      }) do
-    strategy_name = apply(mod, :strategy_name, [])
-    encrypted_data_base64 = encrypted_data |> Base.url_encode64(padding: true)
-
-    encryption_artefacts_base64 =
-      encryption_artefacts |> Yaml.encode() |> Base.url_encode64(padding: true)
-
-    [strategy_name, encrypted_data_base64, encryption_artefacts_base64] |> Enum.join(".")
-  end
-
-  def serialize(%EncryptedDataWithDerivedKey{
-        derived_key: %DerivedKey{} = derived_key,
-        encrypted_data: %EncryptedData{} = encrypted_data
-      }) do
-    [serialize(encrypted_data), serialize_derived_key(derived_key)] |> Enum.join(".")
-  end
-
-  @spec serialize_derived_key(DerivedKey.t()) :: binary
-  defp serialize_derived_key(%DerivedKey{
-         key_derivation_strategy: key_derivation_mod,
-         salt: salt,
-         iter: iterations,
-         length: length
-       }) do
-    key_derivation_mod = apply(key_derivation_mod, :strategy_name, [])
-
-    derivation_artefacts =
-      %{"iv" => salt, "i" => iterations, "l" => length}
-      |> Yaml.encode()
-      |> Base.url_encode64(padding: true)
-
-    [key_derivation_mod, derivation_artefacts] |> Enum.join(".")
-  end
+  def serialize(%EncryptedData{} = ed), do: Serialization.serialize(ed)
+  def serialize(%EncryptedDataWithDerivedKey{} = edwdk), do: Serialization.serialize(edwdk)
 end
