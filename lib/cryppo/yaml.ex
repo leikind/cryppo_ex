@@ -4,12 +4,18 @@ defmodule Cryppo.Yaml do
     * Wrapper around a fork of yamerl to decode YAML
   """
 
+  @spec decode(binary) :: map
   def decode(yaml) when is_binary(yaml) do
-    [yaml_doc | _] = :yamerl.decode(yaml)
+    [yaml_doc | _] =
+      yaml
+      # hack for yamerl
+      |> String.replace(": !binary |-", ": !!binary |-", global: true)
+      |> :yamerl.decode()
+
     yaml_doc |> list_of_tuples() |> to_map
   end
 
-  def to_map(list) when is_list(list) do
+  defp to_map(list) when is_list(list) do
     list
     |> Enum.into(%{}, fn
       {k, v} when is_list(v) -> {k, to_map(v)}
@@ -17,14 +23,15 @@ defmodule Cryppo.Yaml do
     end)
   end
 
-  def key_value({k, v}) when is_list(k), do: {to_string(k), value(v)}
-  def key_value({k, v}) when is_number(k), do: {k, value(v)}
+  @spec key_value({maybe_improper_list | number, any}) :: {binary | number, any}
+  defp key_value({k, v}) when is_list(k), do: {to_string(k), value(v)}
+  defp key_value({k, v}) when is_number(k), do: {k, value(v)}
 
-  def value([{_, _} | _] = v), do: list_of_tuples(v)
-  def value(v) when is_list(v), do: to_string(v)
-  def value(v), do: v
+  defp value([{_, _} | _] = v), do: list_of_tuples(v)
+  defp value(v) when is_list(v), do: to_string(v)
+  defp value(v), do: v
 
-  def list_of_tuples(v), do: v |> Enum.map(&key_value/1)
+  defp list_of_tuples(v), do: v |> Enum.map(&key_value/1)
 
   # Encode
 

@@ -65,4 +65,13 @@ defmodule YamlTest do
 
     assert input == output
   end
+
+  test "yaml with binary generated with Ruby YAML" do
+    yaml = "---\nfoo: !binary |-\n  lpl7XzUwhUZflw==\nbar: !binary |-\n  iKSs266T9yGKqw==\n"
+
+    assert Yaml.decode(yaml) == %{
+             "bar" => <<136, 164, 172, 219, 174, 147, 247, 33, 138, 171>>,
+             "foo" => <<150, 153, 123, 95, 53, 48, 133, 70, 95, 151>>
+           }
+  end
 end
