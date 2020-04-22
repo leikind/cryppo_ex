@@ -23,7 +23,6 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 ## TODO
 
 * RSA signatures
-* switch to the upstream of yamerl, maybe from HEX.pm and not github
 * Command line interface like for Cryppo.js
 * Add functions which list (1) available encryption strategies (2) available key derivation strategies
 * check the compatibility with yaml with binaries from ruby, there can be a problem with the tag

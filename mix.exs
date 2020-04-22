@@ -24,7 +24,7 @@ defmodule Cryppo.MixProject do
     [
       {:credo, "~> 1.1.0", only: :dev},
       {:pbkdf2, "~> 2.0"},
-      {:yamerl, git: "https://github.com/leikind/yamerl"},
+      {:yamerl, "~> 0.8"},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
