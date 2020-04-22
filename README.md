@@ -22,8 +22,13 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 
 ## TODO
 
-* encryption / decryption with key derivation
 * RSA signatures
-* Command line interface
-* Maybe: implement Cryppo.encrypt/2 which would also generate the key like in the typescript port
+* switch to the upstream of yamerl, maybe from HEX.pm and not github
+* Command line interface like for Cryppo.js
 * Add functions which list (1) available encryption strategies (2) available key derivation strategies
+* check the compatibility with yaml with binaries from ruby, there can be a problem with the tag
+* better Elixir style: the data should always be the first argument
+* behaviour for key derivation strategies just like for encryption strategies
+* proper readme
+* serialization protocol
+* Maybe: implement Cryppo.encrypt/2 which would also generate the key like in the typescript port
