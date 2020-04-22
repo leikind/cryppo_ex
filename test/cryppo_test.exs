@@ -30,7 +30,7 @@ defmodule CryppoTest do
       for encryption_strategy <- @all_encryption_strategies do
         key = Cryppo.generate_encryption_key(encryption_strategy)
 
-        encrypted_data = Cryppo.encrypt(encryption_strategy, key, @plain_data)
+        encrypted_data = @plain_data |> Cryppo.encrypt(encryption_strategy, key)
 
         assert %EncryptedData{} = encrypted_data,
                "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
@@ -49,7 +49,7 @@ defmodule CryppoTest do
         key = Cryppo.generate_encryption_key(encryption_strategy)
         wrong_key = Cryppo.generate_encryption_key(encryption_strategy)
 
-        encrypted_data = Cryppo.encrypt(encryption_strategy, key, @plain_data)
+        encrypted_data = @plain_data |> Cryppo.encrypt(encryption_strategy, key)
 
         assert %EncryptedData{} = encrypted_data,
                "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
@@ -61,7 +61,7 @@ defmodule CryppoTest do
 
     test "trying to feed a Aes256Gcm key to a Rsa4096 decryption" do
       key = Cryppo.generate_encryption_key("Rsa4096")
-      encrypted_data = Cryppo.encrypt("Rsa4096", key, @plain_data)
+      encrypted_data = @plain_data |> Cryppo.encrypt("Rsa4096", key)
 
       wrong_key = Cryppo.generate_encryption_key("Aes256Gcm")
 
@@ -72,7 +72,7 @@ defmodule CryppoTest do
 
     test "trying to feed an Rsa4096 key to a Aes256Gcm decryption" do
       key = Cryppo.generate_encryption_key("Aes256Gcm")
-      encrypted_data = Cryppo.encrypt("Aes256Gcm", key, @plain_data)
+      encrypted_data = @plain_data |> Cryppo.encrypt("Aes256Gcm", key)
 
       wrong_key = Cryppo.generate_encryption_key("Rsa4096")
 
@@ -83,7 +83,7 @@ defmodule CryppoTest do
 
     test "trying to feed a random string as a key to a Rsa4096 decryption" do
       key = Cryppo.generate_encryption_key("Rsa4096")
-      encrypted_data = Cryppo.encrypt("Rsa4096", key, @plain_data)
+      encrypted_data = @plain_data |> Cryppo.encrypt("Rsa4096", key)
 
       wrong_key = "foobar"
 
@@ -94,7 +94,7 @@ defmodule CryppoTest do
 
     test "trying to feed a random string as a key to a Aes256Gcm decryption" do
       key = Cryppo.generate_encryption_key("Aes256Gcm")
-      encrypted_data = Cryppo.encrypt("Aes256Gcm", key, @plain_data)
+      encrypted_data = @plain_data |> Cryppo.encrypt("Aes256Gcm", key)
 
       wrong_key = "foobar"
 
@@ -106,7 +106,7 @@ defmodule CryppoTest do
     test "trying to encrypt with Aes256Gcm using a Rsa4096 key" do
       key = Cryppo.generate_encryption_key("Aes256Gcm")
 
-      assert Cryppo.encrypt("Rsa4096", key, @plain_data) ==
+      assert Cryppo.encrypt(@plain_data, "Rsa4096", key) ==
                {:incompatible_key,
                 [submitted_key_strategy: Cryppo.Aes256gcm, encryption_strategy: Cryppo.Rsa4096]}
     end
@@ -114,7 +114,7 @@ defmodule CryppoTest do
     test "trying to encrypt with Rsa4096 using a Aes256Gcm key" do
       key = Cryppo.generate_encryption_key("Rsa4096")
 
-      assert Cryppo.encrypt("Aes256Gcm", key, @plain_data) ==
+      assert Cryppo.encrypt(@plain_data, "Aes256Gcm", key) ==
                {:incompatible_key,
                 [submitted_key_strategy: Cryppo.Rsa4096, encryption_strategy: Cryppo.Aes256gcm]}
     end
@@ -122,11 +122,11 @@ defmodule CryppoTest do
 
   test "Encryption / decryption with a derived key" do
     encrypted_data =
-      Cryppo.encrypt_with_derived_key(
+      @plain_data
+      |> Cryppo.encrypt_with_derived_key(
         "Aes256Gcm",
         "Pbkdf2Hmac",
-        "my passphrase",
-        @plain_data
+        "my passphrase"
       )
 
     assert(encrypted_data)
@@ -152,11 +152,11 @@ defmodule CryppoTest do
 
   test "Reusing a key already present in EncryptedDataWithDerivedKey" do
     encrypted_data =
-      Cryppo.encrypt_with_derived_key(
+      @plain_data
+      |> Cryppo.encrypt_with_derived_key(
         "Aes256Gcm",
         "Pbkdf2Hmac",
-        "my passphrase",
-        @plain_data
+        "my passphrase"
       )
 
     assert(encrypted_data)

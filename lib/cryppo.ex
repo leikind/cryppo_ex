@@ -25,12 +25,12 @@ defmodule Cryppo do
     end
   end
 
-  @spec encrypt(encryption_strategy, EncryptionKey.t(), binary) ::
+  @spec encrypt(binary, encryption_strategy, EncryptionKey.t()) ::
           EncryptedData.t()
           | {:unsupported_encryption_strategy, atom}
           | :encryption_error
           | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
-  def encrypt(encryption_strategy, %EncryptionKey{} = key, data)
+  def encrypt(data, encryption_strategy, %EncryptionKey{} = key)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do
       apply(mod, :run_encryption, [data, key])
@@ -49,15 +49,15 @@ defmodule Cryppo do
     apply(mod, :run_decryption, [encrypted_data, key])
   end
 
-  @spec encrypt_with_derived_key(encryption_strategy(), encryption_strategy(), String.t(), binary) ::
+  @spec encrypt_with_derived_key(binary, encryption_strategy(), encryption_strategy(), String.t()) ::
           EncryptedDataWithDerivedKey.t()
           | {:unsupported_encryption_strategy, encryption_strategy}
           | {:unsupported_key_derivation_strategy, encryption_strategy}
   def encrypt_with_derived_key(
+        data,
         encryption_strategy,
         key_derivation_strategy,
-        passphrase,
-        data
+        passphrase
       )
       when is_binary(encryption_strategy) and is_binary(key_derivation_strategy) and
              is_binary(passphrase) and is_binary(data) do

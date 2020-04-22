@@ -26,7 +26,6 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 * Command line interface like for Cryppo.js
 * Add functions which list (1) available encryption strategies (2) available key derivation strategies
 * check the compatibility with yaml with binaries from ruby, there can be a problem with the tag
-* better Elixir style: the data should always be the first argument
 * behaviour for key derivation strategies just like for encryption strategies
 * proper readme
 * serialization protocol

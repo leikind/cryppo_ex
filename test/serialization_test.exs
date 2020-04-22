@@ -10,7 +10,7 @@ defmodule SerializationTest do
       strategy = "Aes256Gcm"
       key = Cryppo.generate_encryption_key(strategy)
 
-      encrypted_data = Cryppo.encrypt(strategy, key, @plain_data)
+      encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
 
       serialized = Cryppo.serialize(encrypted_data)
       assert is_binary(serialized)
@@ -29,7 +29,7 @@ defmodule SerializationTest do
       strategy = "Aes256Gcm"
       key = Cryppo.generate_encryption_key(strategy)
 
-      encrypted_data = Cryppo.encrypt(strategy, key, @plain_data)
+      encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
       assert %EncryptedData{} = encrypted_data
 
       serialized = Cryppo.serialize(encrypted_data)
@@ -51,11 +51,11 @@ defmodule SerializationTest do
       derivation_strategy_name = "Pbkdf2Hmac"
 
       encrypted_data_with_derived_key =
-        Cryppo.encrypt_with_derived_key(
+        @plain_data
+        |> Cryppo.encrypt_with_derived_key(
           encryption_strategy,
           derivation_strategy_name,
-          "my passphrase",
-          @plain_data
+          "my passphrase"
         )
 
       serialized = Cryppo.serialize(encrypted_data_with_derived_key)
@@ -78,11 +78,11 @@ defmodule SerializationTest do
 
     test "loads the data" do
       encrypted_data =
-        Cryppo.encrypt_with_derived_key(
+        @plain_data
+        |> Cryppo.encrypt_with_derived_key(
           "Aes256Gcm",
           "Pbkdf2Hmac",
-          "my passphrase",
-          @plain_data
+          "my passphrase"
         )
 
       assert %EncryptedDataWithDerivedKey{} = encrypted_data,
@@ -129,11 +129,11 @@ defmodule SerializationTest do
 
     test "encrypt with a derived key, serialize, load, encrypt with the derived key" do
       encrypted_data =
-        Cryppo.encrypt_with_derived_key(
+        @plain_data
+        |> Cryppo.encrypt_with_derived_key(
           "Aes256Gcm",
           "Pbkdf2Hmac",
-          "my passphrase",
-          @plain_data
+          "my passphrase"
         )
 
       assert %EncryptedDataWithDerivedKey{} = encrypted_data,
