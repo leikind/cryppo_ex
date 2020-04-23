@@ -8,7 +8,7 @@ defmodule Cryppo.Pbkdf2hmac do
     Minimal number of iterations: 20000
   """
 
-  alias Cryppo.{DerivedKey, EncryptionKey}
+  use Cryppo.DerivationStrategy, strategy_name: "Pbkdf2Hmac"
 
   @min_iterations 20_000
   @iteration_variance 10
@@ -26,13 +26,11 @@ defmodule Cryppo.Pbkdf2hmac do
     :ok
   end
 
-  @spec strategy_name :: binary
-  def strategy_name, do: "Pbkdf2Hmac"
-
   @spec hash_function :: binary
   def hash_function, do: "SHA256"
 
   @spec generate_derived_key(binary) :: DerivedKey.t()
+  @impl DerivationStrategy
   def generate_derived_key(passphrase) do
     salt = make_salt()
     iterations = make_iterations()
@@ -40,6 +38,7 @@ defmodule Cryppo.Pbkdf2hmac do
   end
 
   @spec build_derived_key(binary, DerivedKey.t()) :: DerivedKey.t()
+  @impl DerivationStrategy
   def build_derived_key(
         _passphrase,
         %DerivedKey{

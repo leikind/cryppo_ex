@@ -17,6 +17,7 @@ defmodule Cryppo.Rsa4096 do
   @padding :rsa_pkcs1_oaep_padding
 
   @spec generate_key :: EncryptionKey.t()
+  @impl true
   def generate_key do
     {:rsa, @size, @exponent}
     |> :public_key.generate_key()

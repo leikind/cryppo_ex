@@ -22,6 +22,7 @@ defmodule Cryppo.Aes256gcm do
   @auth_tag_length 16
 
   @spec generate_key :: EncryptionKey.t()
+  @impl EncryptionStrategy
   def generate_key do
     @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new(__MODULE__)
   end

@@ -7,6 +7,7 @@ defmodule Cryppo.EncryptionStrategy do
   alias Cryppo.{EncryptedData, EncryptionKey}
 
   @callback strategy_name :: binary
+  @callback generate_key :: EncryptionKey.t()
   @callback encrypt(binary, EncryptionKey.t()) ::
               {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
   @callback decrypt(EncryptedData.t(), EncryptionKey.t()) ::
