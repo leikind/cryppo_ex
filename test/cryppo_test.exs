@@ -1,7 +1,7 @@
 defmodule CryppoTest do
   use ExUnit.Case
 
-  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, EncryptionKey}
+  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, EncryptionKey, RsaSignature}
 
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
@@ -174,6 +174,55 @@ defmodule CryppoTest do
   end
 
   describe "RSA signatures" do
-    # TODO
+    test "sign data with a private key and then verify with the public key" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      assert %RsaSignature{} = rsa_signature
+      assert rsa_signature.data == @plain_data
+      assert is_binary(rsa_signature.signature)
+
+      public_key = Cryppo.private_key_to_public_key(private_key)
+
+      assert Cryppo.verify_rsa_signature(rsa_signature, public_key) == true
+    end
+
+    test "a different public key" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      wrong_public_key =
+        "Rsa4096"
+        |> Cryppo.generate_encryption_key()
+        |> Cryppo.private_key_to_public_key()
+
+      assert Cryppo.verify_rsa_signature(rsa_signature, wrong_public_key) == false
+    end
+
+    test "verify wrong data" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      public_key = Cryppo.private_key_to_public_key(private_key)
+
+      rsa_signature_with_wrong_data = %{rsa_signature | data: "something else"}
+
+      assert Cryppo.verify_rsa_signature(rsa_signature_with_wrong_data, public_key) == false
+    end
+
+    test "verify wrong signature" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      public_key = Cryppo.private_key_to_public_key(private_key)
+
+      rsa_signature_with_wrong_signature = %{rsa_signature | signature: "notasignature"}
+
+      assert Cryppo.verify_rsa_signature(rsa_signature_with_wrong_signature, public_key) == false
+    end
   end
 end

@@ -11,6 +11,7 @@ defmodule Cryppo do
     EncryptionKey,
     Pbkdf2hmac,
     Rsa4096,
+    RsaSignature,
     Serialization,
     Yaml
   }
@@ -204,6 +205,17 @@ defmodule Cryppo do
         err
     end
   end
+
+  @spec sign_with_private_key(binary, EncryptionKey.t()) :: RsaSignature.t()
+  def sign_with_private_key(data, private_key), do: Rsa4096.sign(data, private_key)
+
+  @spec verify_rsa_signature(RsaSignature.t(), Rsa4096.rsa_public_key()) :: boolean()
+  def verify_rsa_signature(rsa_signature, public_key),
+    do: Rsa4096.verify(rsa_signature, public_key)
+
+  @spec private_key_to_public_key(Rsa4096.rsa_private_key() | EncryptionKey.t()) ::
+          Rsa4096.rsa_public_key()
+  def private_key_to_public_key(rsa_key), do: Rsa4096.private_key_to_public_key(rsa_key)
 
   @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t()) :: binary
   def serialize(%EncryptedData{} = ed), do: Serialization.serialize(ed)

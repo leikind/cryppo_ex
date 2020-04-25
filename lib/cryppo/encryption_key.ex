@@ -4,8 +4,7 @@ defmodule Cryppo.EncryptionKey do
   """
 
   @type binary_key() :: binary()
-  @type rsa_key_tuple() :: tuple()
-  @type internal_key() :: binary_key() | rsa_key_tuple()
+  @type internal_key() :: binary_key() | tuple
   @type t :: %__MODULE__{
           encryption_strategy_module: Cryppo.encryption_strategy_module(),
           key: internal_key()
@@ -14,11 +13,10 @@ defmodule Cryppo.EncryptionKey do
   @enforce_keys [:key]
   defstruct [:encryption_strategy_module, :key]
 
-  @spec new(binary_key() | rsa_key_tuple(), Cryppo.encryption_strategy_module()) ::
-          Cryppo.EncryptionKey.t()
+  @spec new(internal_key(), Cryppo.encryption_strategy_module()) :: t()
   def new(key, mod), do: %__MODULE__{key: key, encryption_strategy_module: mod}
 
-  @spec new(binary_key() | rsa_key_tuple()) :: Cryppo.EncryptionKey.t()
+  @spec new(internal_key()) :: t()
   def new(key), do: %__MODULE__{key: key}
 
   defimpl Inspect do

@@ -6,14 +6,20 @@ defmodule Cryppo.Rsa4096 do
     Padding: rsa_pkcs1_oaep_padding
   """
 
+  @type rsa_private_key() ::
+          {:RSAPrivateKey, integer, integer, integer, integer, integer, integer, integer, integer,
+           integer, any}
+  @type rsa_public_key() :: {:RSAPublicKey, integer, integer}
+
   use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
+  alias Cryppo.RsaSignature
 
   # 4096 is the key size in ruby Cryppo
   @size 4_096
   # 65537 is the default in OpenSSL, and hence in ruby Cryppo
   @exponent 65_537
 
-  # rsa_pkcs1_oaep_padding is the padding in Cryppo
+  # rsa_pkcs1_oaep_padding is the padding in ruby Cryppo
   @padding :rsa_pkcs1_oaep_padding
 
   @spec generate_key :: EncryptionKey.t()
@@ -29,17 +35,27 @@ defmodule Cryppo.Rsa4096 do
   @impl EncryptionStrategy
   def encrypt(data, %EncryptionKey{key: private_key})
       when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey do
-    public_modulus = private_key |> elem(2)
-    public_exponent = private_key |> elem(3)
-
-    public_key = {:RSAPublicKey, public_modulus, public_exponent}
-
+    public_key = private_key_to_public_key(private_key)
     encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
 
     {:ok, encrypted, []}
   end
 
   def encrypt(_, _), do: :encryption_error
+
+  @spec private_key_to_public_key(rsa_private_key() | EncryptionKey.t()) :: rsa_public_key()
+  def private_key_to_public_key(%EncryptionKey{
+        encryption_strategy_module: __MODULE__,
+        key: private_key
+      }),
+      do: private_key_to_public_key(private_key)
+
+  def private_key_to_public_key(private_key)
+      when is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey do
+    public_modulus = private_key |> elem(2)
+    public_exponent = private_key |> elem(3)
+    {:RSAPublicKey, public_modulus, public_exponent}
+  end
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) :: {:ok, binary} | :decryption_error
   @impl EncryptionStrategy
@@ -52,4 +68,27 @@ defmodule Cryppo.Rsa4096 do
   end
 
   def decrypt(_, _), do: :decryption_error
+
+  @spec sign(binary, rsa_private_key() | EncryptionKey.t()) :: RsaSignature.t()
+  def sign(data, %EncryptionKey{encryption_strategy_module: __MODULE__, key: private_key}) do
+    sign(data, private_key)
+  end
+
+  def sign(data, private_key)
+      when is_binary(data) and is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey do
+    signature = :public_key.sign(data, :sha256, private_key)
+    %RsaSignature{signature: signature, data: data}
+  end
+
+  @spec verify(RsaSignature.t(), rsa_public_key) :: boolean()
+  def verify(%RsaSignature{data: data, signature: signature}, public_key) do
+    verify(data, signature, public_key)
+  end
+
+  @spec verify(binary, binary, rsa_public_key) :: boolean()
+  def verify(data, signature, public_key)
+      when is_binary(data) and is_binary(signature) and is_tuple(public_key) and
+             elem(public_key, 0) == :RSAPublicKey do
+    :public_key.verify(data, :sha256, signature, public_key)
+  end
 end
