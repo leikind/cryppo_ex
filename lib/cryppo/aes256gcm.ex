@@ -44,7 +44,7 @@ defmodule Cryppo.Aes256gcm do
         true
       )
 
-    {:ok, encrypted, iv: iv, auth_tag: auth_tag, auth_data: @additional_authenticated_data}
+    {:ok, encrypted, iv: iv, at: auth_tag, ad: @additional_authenticated_data}
   end
 
   def encrypt(_, _), do: :encryption_error
@@ -55,7 +55,7 @@ defmodule Cryppo.Aes256gcm do
   def decrypt(
         %EncryptedData{
           encrypted_data: encrypted_data,
-          encryption_artefacts: %{iv: iv, auth_tag: auth_tag, auth_data: auth_data}
+          encryption_artefacts: %{iv: iv, at: auth_tag, ad: auth_data}
         },
         %EncryptionKey{key: key}
       )
