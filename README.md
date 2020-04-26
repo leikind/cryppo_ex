@@ -22,7 +22,6 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 
 ## TODO
 
-* Serialization for RSA signatures
 * Command line interface like for Cryppo.js
 * Add functions which list (1) available encryption strategies (2) available key derivation strategies
 * proper readme

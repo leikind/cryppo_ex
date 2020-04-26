@@ -149,4 +149,39 @@ defmodule SerializationTest do
       assert decrypted == @plain_data
     end
   end
+
+  describe "signing and verification" do
+    test "serializes the data" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      serialized = Cryppo.serialize(rsa_signature)
+
+      assert [p1, p2, p3, p4] = String.split(serialized, ".")
+
+      assert p1 == "Sign"
+      assert p2 == "Rsa4096"
+
+      {:ok, p3} = Base.url_decode64(p3)
+      {:ok, p4} = Base.url_decode64(p4)
+
+      assert p3 == rsa_signature.signature
+      assert p4 == rsa_signature.data
+    end
+
+    test "sign, serialize, de-serialize, and verify" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      serialized = Cryppo.serialize(rsa_signature)
+
+      restored_rsa_signature = Cryppo.load(serialized)
+      assert restored_rsa_signature == rsa_signature
+
+      public_key = Cryppo.private_key_to_public_key(private_key)
+      assert Cryppo.verify_rsa_signature(restored_rsa_signature, public_key) == true
+    end
+  end
 end

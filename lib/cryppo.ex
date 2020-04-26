@@ -4,17 +4,17 @@ defmodule Cryppo do
   """
 
   alias Cryppo.{
-    Aes256gcm,
     DerivedKey,
     EncryptedData,
     EncryptedDataWithDerivedKey,
     EncryptionKey,
-    Pbkdf2hmac,
+    Loader,
     Rsa4096,
     RsaSignature,
-    Serialization,
-    Yaml
+    Serialization
   }
+
+  import Cryppo.Strategies
 
   @type encryption_strategy() :: String.t()
   @type encryption_strategy_module() :: atom
@@ -112,100 +112,6 @@ defmodule Cryppo do
     end
   end
 
-  # probably code it with a macro
-  # Aes256Gcm
-  # Rsa4096
-  # these 2 below are same is the cipher in Erlang crypto
-  # :aes_256_gcm -> {:ok, Aes256gcm}
-  # :rsa_4096 -> {:ok, Rsa4096}
-  @spec find_strategy(encryption_strategy) ::
-          {:ok, atom} | {:unsupported_encryption_strategy, encryption_strategy}
-  defp find_strategy(encryption_strategy) do
-    case encryption_strategy do
-      "Aes256Gcm" -> {:ok, Aes256gcm}
-      "Rsa4096" -> {:ok, Rsa4096}
-      _ -> {:unsupported_encryption_strategy, encryption_strategy}
-    end
-  end
-
-  @spec find_key_derivation_strategy(encryption_strategy) ::
-          {:ok, atom} | {:unsupported_key_derivation_strategy, encryption_strategy}
-  defp find_key_derivation_strategy(key_derivation_strategy) do
-    case key_derivation_strategy do
-      "Pbkdf2Hmac" -> {:ok, Pbkdf2hmac}
-      _ -> {:unsupported_key_derivation_strategy, key_derivation_strategy}
-    end
-  end
-
-  @spec load(binary) ::
-          EncryptedDataWithDerivedKey.t()
-          | EncryptedData.t()
-          | {:unsupported_encryption_strategy, binary}
-          | {:error, :invalid_serialization_value}
-  def load(serialized) when is_binary(serialized) do
-    case String.split(serialized, ".") do
-      [
-        strategy_name,
-        encrypted_data_base64,
-        encryption_artefacts_base64,
-        key_derivation_strategy,
-        derivation_artefacts_base64
-      ] ->
-        with {:ok, key_derivation_mod} <- find_key_derivation_strategy(key_derivation_strategy),
-             {:ok, derivation_artefacts_yaml} = Base.url_decode64(derivation_artefacts_base64),
-             derivation_artefacts = Yaml.decode(derivation_artefacts_yaml),
-             {:ok, %{"iv" => salt, "i" => iterations, "l" => length}} <-
-               parse_derivation_artefacts(derivation_artefacts) do
-          encrypted_data =
-            to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64)
-
-          hash = apply(key_derivation_mod, :hash_function, [])
-
-          derived_key = %DerivedKey{
-            encryption_key: nil,
-            key_derivation_strategy: key_derivation_mod,
-            salt: salt,
-            iter: iterations,
-            length: length,
-            hash: hash
-          }
-
-          %EncryptedDataWithDerivedKey{encrypted_data: encrypted_data, derived_key: derived_key}
-        end
-
-      [
-        strategy_name,
-        encrypted_data_base64,
-        encryption_artefacts_base64
-      ] ->
-        to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64)
-
-      _ ->
-        {:error, :invalid_serialization_value}
-    end
-  end
-
-  @spec parse_derivation_artefacts(any) :: {:error, :invalid_derivation_artefacts} | {:ok, map}
-  defp parse_derivation_artefacts(%{"iv" => _, "i" => _, "l" => _} = da), do: {:ok, da}
-  defp parse_derivation_artefacts(_), do: {:error, :invalid_derivation_artefacts}
-
-  @spec to_encrypted_data(encryption_strategy(), binary, binary) ::
-          {:unsupported_encryption_strategy, binary} | EncryptedData.t()
-  defp to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
-    case find_strategy(strategy_name) do
-      {:ok, encryption_strategy_mod} ->
-        {:ok, encrypted_data} = Base.url_decode64(encrypted_data_base64)
-        {:ok, encryption_artefacts_base64} = Base.url_decode64(encryption_artefacts_base64)
-
-        encryption_artefacts = Yaml.decode(encryption_artefacts_base64)
-
-        EncryptedData.new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
-
-      err ->
-        err
-    end
-  end
-
   @spec sign_with_private_key(binary, EncryptionKey.t()) :: RsaSignature.t()
   def sign_with_private_key(data, private_key), do: Rsa4096.sign(data, private_key)
 
@@ -217,7 +123,19 @@ defmodule Cryppo do
           Rsa4096.rsa_public_key()
   def private_key_to_public_key(rsa_key), do: Rsa4096.private_key_to_public_key(rsa_key)
 
-  @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t()) :: binary
-  def serialize(%EncryptedData{} = ed), do: Serialization.serialize(ed)
-  def serialize(%EncryptedDataWithDerivedKey{} = edwdk), do: Serialization.serialize(edwdk)
+  @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t()) ::
+          binary
+  def serialize(%EncryptedData{} = s), do: Serialization.serialize(s)
+  def serialize(%EncryptedDataWithDerivedKey{} = s), do: Serialization.serialize(s)
+  def serialize(%RsaSignature{} = s), do: Serialization.serialize(s)
+
+  @spec load(binary) ::
+          EncryptedDataWithDerivedKey.t()
+          | EncryptedData.t()
+          | RsaSignature.t()
+          | {:error, :invalid_base64}
+          | {:error, :invalid_derivation_artefacts}
+          | {:unsupported_encryption_strategy, binary}
+          | {:unsupported_key_derivation_strategy, binary}
+  def load(serialized), do: Loader.load(serialized)
 end
