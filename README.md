@@ -23,7 +23,6 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 ## TODO
 
 * Command line interface like for Cryppo.js
-* Add functions which list (1) available encryption strategies (2) available key derivation strategies
 * proper readme
 * Maybe: implement Cryppo.encrypt/2 which would also generate the key like in the typescript port
 * Maybe: some other AES cipher

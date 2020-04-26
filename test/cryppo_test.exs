@@ -7,6 +7,14 @@ defmodule CryppoTest do
 
   @plain_data "Hello world!"
 
+  test "Cryppo.encryption_strategies" do
+    assert Cryppo.encryption_strategies() == ["Aes256Gcm", "Rsa4096"]
+  end
+
+  test "Cryppo.derivation_strategies" do
+    assert Cryppo.derivation_strategies() == ["Pbkdf2Hmac"]
+  end
+
   test "Cryppo.generate_encryption_key" do
     for encryption_strategy <- @all_encryption_strategies do
       key = Cryppo.generate_encryption_key(encryption_strategy)

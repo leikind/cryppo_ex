@@ -3,7 +3,7 @@ defmodule Cryppo.Loader do
 
   alias Cryppo.{DerivedKey, EncryptedData, EncryptedDataWithDerivedKey, RsaSignature, Yaml}
 
-  import Cryppo.Strategies
+  import Cryppo.Strategies, only: [find_strategy: 1, find_key_derivation_strategy: 1]
 
   @spec load(binary) ::
           EncryptedDataWithDerivedKey.t()

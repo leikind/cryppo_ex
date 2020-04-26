@@ -11,13 +11,20 @@ defmodule Cryppo do
     Loader,
     Rsa4096,
     RsaSignature,
-    Serialization
+    Serialization,
+    Strategies
   }
 
-  import Cryppo.Strategies
+  import Strategies, only: [find_strategy: 1, find_key_derivation_strategy: 1]
 
   @type encryption_strategy() :: String.t()
   @type encryption_strategy_module() :: atom
+
+  @spec encryption_strategies :: [encryption_strategy()]
+  def encryption_strategies, do: Strategies.encryption_strategies()
+
+  @spec derivation_strategies :: [encryption_strategy()]
+  def derivation_strategies, do: Strategies.derivation_strategies()
 
   @spec generate_encryption_key(encryption_strategy) ::
           EncryptionKey.t() | {:unsupported_encryption_strategy, binary}
