@@ -4,7 +4,7 @@ defmodule Cryppo.Yaml do
     * Wrapper around a fork of yamerl to decode YAML
   """
 
-  @spec decode(binary) :: map
+  @spec decode(binary) :: {:ok, map | :invalid_yaml}
   def decode(yaml) when is_binary(yaml) do
     [yaml_doc | _] =
       yaml
@@ -12,7 +12,11 @@ defmodule Cryppo.Yaml do
       |> String.replace(": !binary |-", ": !!binary |-", global: true)
       |> :yamerl.decode()
 
-    yaml_doc |> list_of_tuples() |> to_map
+    tuples = list_of_tuples(yaml_doc)
+
+    if Enum.any?(tuples, &(&1 == :invalid_yaml)),
+      do: {:error, :invalid_yaml},
+      else: {:ok, to_map(tuples)}
   end
 
   defp to_map(list) when is_list(list) do
@@ -26,6 +30,7 @@ defmodule Cryppo.Yaml do
   @spec key_value({maybe_improper_list | number, any}) :: {binary | number, any}
   defp key_value({k, v}) when is_list(k), do: {to_string(k), value(v)}
   defp key_value({k, v}) when is_number(k), do: {k, value(v)}
+  defp key_value(_), do: :invalid_yaml
 
   defp value([{_, _} | _] = v), do: list_of_tuples(v)
   defp value(v) when is_list(v), do: to_string(v)

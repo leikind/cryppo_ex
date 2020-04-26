@@ -141,6 +141,7 @@ defmodule Cryppo do
           | EncryptedData.t()
           | RsaSignature.t()
           | {:error, :invalid_base64}
+          | {:error, :invalid_yaml}
           | {:error, :invalid_derivation_artefacts}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}

@@ -19,33 +19,33 @@ defmodule YamlTest do
       }
     ]
     |> Enum.each(fn input ->
-      out = input |> Yaml.encode() |> Yaml.decode()
+      {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
       assert input == out
     end)
   end
 
   test "keys are numbers" do
     input = %{"123" => 12}
-    out = input |> Yaml.encode() |> Yaml.decode()
+    {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
     assert out == %{"123" => 12}
 
     input = %{"123" => 12}
-    out = input |> Yaml.encode() |> Yaml.decode()
+    {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
     assert out == %{"123" => 12}
 
     input = %{"123.2" => 12.3}
-    out = input |> Yaml.encode() |> Yaml.decode()
+    {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
     assert out == %{"123.2" => 12.3}
 
     input = %{123.2 => 12.3}
-    out = input |> Yaml.encode() |> Yaml.decode()
+    {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
     assert out == %{123.2 => 12.3}
   end
 
   test "YAML atoms" do
     input = %{foo: 12, bar: :boo}
 
-    out = input |> Yaml.encode() |> Yaml.decode()
+    {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
     assert out == %{"foo" => 12, "bar" => "boo"}
   end
 
@@ -61,7 +61,7 @@ defmodule YamlTest do
       "bin2" => bin3
     }
 
-    output = input |> Yaml.encode() |> Yaml.decode()
+    {:ok, output} = input |> Yaml.encode() |> Yaml.decode()
 
     assert input == output
   end
@@ -69,9 +69,15 @@ defmodule YamlTest do
   test "yaml with binary generated with Ruby YAML" do
     yaml = "---\nfoo: !binary |-\n  lpl7XzUwhUZflw==\nbar: !binary |-\n  iKSs266T9yGKqw==\n"
 
-    assert Yaml.decode(yaml) == %{
+    {:ok, output} = Yaml.decode(yaml)
+
+    assert output == %{
              "bar" => <<136, 164, 172, 219, 174, 147, 247, 33, 138, 171>>,
              "foo" => <<150, 153, 123, 95, 53, 48, 133, 70, 95, 151>>
            }
+  end
+
+  test "invalid YAML" do
+    assert Yaml.decode("foobar") == {:error, :invalid_yaml}
   end
 end

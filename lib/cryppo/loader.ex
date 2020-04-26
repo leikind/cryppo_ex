@@ -10,6 +10,7 @@ defmodule Cryppo.Loader do
           | EncryptedData.t()
           | RsaSignature.t()
           | {:error, :invalid_base64}
+          | {:error, :invalid_yaml}
           | {:error, :invalid_derivation_artefacts}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}
@@ -52,13 +53,14 @@ defmodule Cryppo.Loader do
   @spec to_encrypted_data(binary, any, any) ::
           EncryptedData.t()
           | {:error, :invalid_base64}
+          | {:error, :invalid_yaml}
           | {:unsupported_encryption_strategy, binary}
   defp to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
     case find_strategy(strategy_name) do
       {:ok, encryption_strategy_mod} ->
         with {:ok, encrypted_data} <- decode_base64(encrypted_data_base64),
              {:ok, encryption_artefacts_base64} <- decode_base64(encryption_artefacts_base64),
-             encryption_artefacts <- Yaml.decode(encryption_artefacts_base64) do
+             {:ok, encryption_artefacts} <- Yaml.decode(encryption_artefacts_base64) do
           EncryptedData.new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
         end
 
@@ -70,6 +72,7 @@ defmodule Cryppo.Loader do
   @spec to_encrypted_data_with_derived_key(binary, binary, binary, binary, binary) ::
           EncryptedDataWithDerivedKey.t()
           | {:error, :invalid_base64}
+          | {:error, :invalid_yaml}
           | {:error, :invalid_derivation_artefacts}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}
@@ -83,7 +86,7 @@ defmodule Cryppo.Loader do
     with {:ok, key_derivation_mod} <-
            find_key_derivation_strategy(key_derivation_strategy),
          {:ok, derivation_artefacts_yaml} <- decode_base64(derivation_artefacts_base64),
-         derivation_artefacts <- Yaml.decode(derivation_artefacts_yaml),
+         {:ok, derivation_artefacts} <- Yaml.decode(derivation_artefacts_yaml),
          {:ok, salt, iterations, length} <- parse_derivation_artefacts(derivation_artefacts),
          %EncryptedData{} = encrypted_data <-
            to_encrypted_data(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
