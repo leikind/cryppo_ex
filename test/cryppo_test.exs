@@ -33,8 +33,6 @@ defmodule CryppoTest do
 
   describe "Encryption / decryption with a generated key" do
     test "Encryption / decryption using all available strategies" do
-      @plain_data = "Hello world!"
-
       for encryption_strategy <- @all_encryption_strategies do
         key = Cryppo.generate_encryption_key(encryption_strategy)
 
@@ -50,9 +48,21 @@ defmodule CryppoTest do
       end
     end
 
-    test "Encryption / decryption using raw keys, not EncryptionKey structs" do
-      @plain_data = "Hello world!"
+    test "generating an encryption key and encrypting in one go" do
+      for encryption_strategy <- @all_encryption_strategies do
+        {encrypted_data, key} = @plain_data |> Cryppo.encrypt(encryption_strategy)
 
+        assert %EncryptedData{} = encrypted_data,
+               "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
+
+        {:ok, decrypted_data} = Cryppo.decrypt(encrypted_data, key)
+
+        assert decrypted_data == @plain_data,
+               "decryption with #{encryption_strategy} is successful"
+      end
+    end
+
+    test "Encryption / decryption using raw keys, not EncryptionKey structs" do
       for encryption_strategy <- ["Rsa4096", "Aes256Gcm"] do
         key = Cryppo.generate_encryption_key(encryption_strategy)
         raw_key = key.key
@@ -70,8 +80,6 @@ defmodule CryppoTest do
     end
 
     test "Decrypting using the wrong key of the same strategy" do
-      @plain_data = "Hello world!"
-
       for encryption_strategy <- @all_encryption_strategies do
         key = Cryppo.generate_encryption_key(encryption_strategy)
         wrong_key = Cryppo.generate_encryption_key(encryption_strategy)

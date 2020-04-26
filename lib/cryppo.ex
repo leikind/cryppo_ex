@@ -47,6 +47,19 @@ defmodule Cryppo do
     end
   end
 
+  @spec encrypt(binary, encryption_strategy) ::
+          EncryptedData.t()
+          | {:unsupported_encryption_strategy, atom}
+          | :encryption_error
+  def encrypt(data, encryption_strategy)
+      when is_binary(encryption_strategy) and is_binary(data) do
+    with {:ok, mod} <- find_strategy(encryption_strategy) do
+      encryption_key = apply(mod, :generate_key, [])
+      encrypted = apply(mod, :run_encryption, [data, encryption_key])
+      {encrypted, encryption_key}
+    end
+  end
+
   @spec decrypt(EncryptedData.t(), EncryptionKey.t() | any) ::
           {:ok, binary}
           | {:error, :invalid_encryption_key}

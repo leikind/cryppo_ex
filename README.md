@@ -24,5 +24,6 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 
 * Command line interface like for Cryppo.js
 * proper readme
-* Maybe: implement Cryppo.encrypt/2 which would also generate the key like in the typescript port
+* load a PEM as a raw key
+* compatibility tests
 * Maybe: some other AES cipher
