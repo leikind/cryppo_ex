@@ -50,6 +50,25 @@ defmodule CryppoTest do
       end
     end
 
+    test "Encryption / decryption using raw keys, not EncryptionKey structs" do
+      @plain_data = "Hello world!"
+
+      for encryption_strategy <- ["Rsa4096", "Aes256Gcm"] do
+        key = Cryppo.generate_encryption_key(encryption_strategy)
+        raw_key = key.key
+
+        encrypted_data = @plain_data |> Cryppo.encrypt(encryption_strategy, raw_key)
+
+        assert %EncryptedData{} = encrypted_data,
+               "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
+
+        {:ok, decrypted_data} = Cryppo.decrypt(encrypted_data, raw_key)
+
+        assert decrypted_data == @plain_data,
+               "decryption with #{encryption_strategy} is successful"
+      end
+    end
+
     test "Decrypting using the wrong key of the same strategy" do
       @plain_data = "Hello world!"
 
@@ -95,9 +114,7 @@ defmodule CryppoTest do
 
       wrong_key = "foobar"
 
-      assert_raise FunctionClauseError, fn ->
-        assert Cryppo.decrypt(encrypted_data, wrong_key)
-      end
+      assert Cryppo.decrypt(encrypted_data, wrong_key) == {:error, :invalid_encryption_key}
     end
 
     test "trying to feed a random string as a key to a Aes256Gcm decryption" do
@@ -106,9 +123,7 @@ defmodule CryppoTest do
 
       wrong_key = "foobar"
 
-      assert_raise FunctionClauseError, fn ->
-        assert Cryppo.decrypt(encrypted_data, wrong_key)
-      end
+      assert Cryppo.decrypt(encrypted_data, wrong_key) == :decryption_error
     end
 
     test "trying to encrypt with Aes256Gcm using a Rsa4096 key" do

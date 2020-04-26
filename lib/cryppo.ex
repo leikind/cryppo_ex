@@ -34,28 +34,30 @@ defmodule Cryppo do
     end
   end
 
-  @spec encrypt(binary, encryption_strategy, EncryptionKey.t()) ::
+  @spec encrypt(binary, encryption_strategy, EncryptionKey.t() | any) ::
           EncryptedData.t()
           | {:unsupported_encryption_strategy, atom}
+          | {:error, :invalid_encryption_key}
           | :encryption_error
           | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
-  def encrypt(data, encryption_strategy, %EncryptionKey{} = key)
+  def encrypt(data, encryption_strategy, encryption_key_or_raw_key)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do
-      apply(mod, :run_encryption, [data, key])
+      apply(mod, :run_encryption, [data, encryption_key_or_raw_key])
     end
   end
 
-  @spec decrypt(EncryptedData.t(), EncryptionKey.t()) ::
+  @spec decrypt(EncryptedData.t(), EncryptionKey.t() | any) ::
           {:ok, binary}
+          | {:error, :invalid_encryption_key}
           | :decryption_error
           | {:decryption_error, {any, any}}
           | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
   def decrypt(
         %EncryptedData{encryption_strategy_module: mod} = encrypted_data,
-        %EncryptionKey{} = key
+        encryption_key_or_raw_key
       ) do
-    apply(mod, :run_decryption, [encrypted_data, key])
+    apply(mod, :run_decryption, [encrypted_data, encryption_key_or_raw_key])
   end
 
   @spec encrypt_with_derived_key(binary, encryption_strategy(), encryption_strategy(), String.t()) ::

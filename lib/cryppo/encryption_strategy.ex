@@ -8,6 +8,8 @@ defmodule Cryppo.EncryptionStrategy do
 
   @callback strategy_name :: binary
   @callback generate_key :: EncryptionKey.t()
+  @callback build_encryption_key(any) ::
+              {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
   @callback encrypt(binary, EncryptionKey.t()) ::
               {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
   @callback decrypt(EncryptedData.t(), EncryptionKey.t()) ::
@@ -37,16 +39,19 @@ defmodule Cryppo.EncryptionStrategy do
     quote do
       def run_encryption(data, %EncryptionKey{encryption_strategy_module: __MODULE__} = key) do
         case encrypt(data, key) do
-          {:ok, encrypted, enc_artefacts} ->
-            EncryptedData.new(__MODULE__, encrypted, enc_artefacts)
-
-          any ->
-            any
+          {:ok, encrypted, artefacts} -> EncryptedData.new(__MODULE__, encrypted, artefacts)
+          any -> any
         end
       end
 
       def run_encryption(_data, %EncryptionKey{key: key, encryption_strategy_module: mod}) do
         {:incompatible_key, submitted_key_strategy: mod, encryption_strategy: __MODULE__}
+      end
+
+      def run_encryption(data, raw_key) do
+        with {:ok, key} <- build_encryption_key(raw_key) do
+          run_encryption(data, key)
+        end
       end
     end
   end
@@ -64,6 +69,12 @@ defmodule Cryppo.EncryptionStrategy do
             encryption_strategy_module: mod
           }) do
         {:incompatible_key, submitted_key_strategy: mod, encryption_strategy: __MODULE__}
+      end
+
+      def run_decryption(data, raw_key) do
+        with {:ok, key} <- build_encryption_key(raw_key) do
+          run_decryption(data, key)
+        end
       end
     end
   end

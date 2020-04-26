@@ -61,23 +61,39 @@ defmodule Cryppo.Aes256gcm do
       )
       when is_binary(encrypted_data) and is_binary(key) and
              byte_size(auth_tag) == @auth_tag_length do
-    decrypted =
-      :crypto.crypto_one_time_aead(
-        @erlang_crypto_cypher,
-        key,
-        iv,
-        encrypted_data,
-        auth_data,
-        auth_tag,
-        false
-      )
+    decrypted = crypto_one_time_aead(key, iv, encrypted_data, auth_data, auth_tag)
 
     case decrypted do
       :error -> :decryption_error
+      :decryption_error -> :decryption_error
       decrypted_data when is_binary(decrypted_data) -> {:ok, decrypted_data}
       {ch1, ch2} -> {:decryption_error, {ch1, ch2}}
     end
   end
 
   def decrypt(_, _), do: :decryption_error
+
+  defp crypto_one_time_aead(key, iv, encrypted_data, auth_data, auth_tag) do
+    :crypto.crypto_one_time_aead(
+      @erlang_crypto_cypher,
+      key,
+      iv,
+      encrypted_data,
+      auth_data,
+      auth_tag,
+      false
+    )
+  rescue
+    ErlangError -> :decryption_error
+  end
+
+  @spec build_encryption_key(binary) ::
+          {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
+  @impl EncryptionStrategy
+  def build_encryption_key(raw_key) when is_binary(raw_key) do
+    key = EncryptionKey.new(raw_key, __MODULE__)
+    {:ok, key}
+  end
+
+  def build_encryption_key(_), do: {:error, :invalid_encryption_key}
 end

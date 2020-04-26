@@ -91,4 +91,14 @@ defmodule Cryppo.Rsa4096 do
              elem(public_key, 0) == :RSAPublicKey do
     :public_key.verify(data, :sha256, signature, public_key)
   end
+
+  @spec build_encryption_key(any) :: {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
+  @impl EncryptionStrategy
+  def build_encryption_key(private_key_in_erlang_format)
+      when is_tuple(private_key_in_erlang_format) and
+             elem(private_key_in_erlang_format, 0) == :RSAPrivateKey do
+    {:ok, EncryptionKey.new(private_key_in_erlang_format, __MODULE__)}
+  end
+
+  def build_encryption_key(_), do: {:error, :invalid_encryption_key}
 end
