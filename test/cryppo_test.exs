@@ -1,7 +1,7 @@
 defmodule CryppoTest do
   use ExUnit.Case
 
-  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, EncryptionKey, RsaSignature}
+  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, EncryptionKey, Rsa4096, RsaSignature}
 
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
@@ -48,7 +48,7 @@ defmodule CryppoTest do
       end
     end
 
-    test "generating an encryption key and encrypting in one go" do
+    test "generate an encryption key and encrypt in one go" do
       for encryption_strategy <- @all_encryption_strategies do
         {encrypted_data, key} = @plain_data |> Cryppo.encrypt(encryption_strategy)
 
@@ -77,6 +77,39 @@ defmodule CryppoTest do
         assert decrypted_data == @plain_data,
                "decryption with #{encryption_strategy} is successful"
       end
+    end
+
+    test "Encryption / decryption with Rsa4096 using a PEM" do
+      encryption_strategy = "Rsa4096"
+      key = Cryppo.generate_encryption_key(encryption_strategy)
+      {:ok, pem} = Rsa4096.to_pem(key)
+
+      encrypted_data = @plain_data |> Cryppo.encrypt(encryption_strategy, pem)
+
+      assert %EncryptedData{} = encrypted_data,
+             "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
+
+      {:ok, decrypted_data} = Cryppo.decrypt(encrypted_data, pem)
+
+      assert decrypted_data == @plain_data,
+             "decryption with #{encryption_strategy} is successful"
+    end
+
+    test "decryption with Rsa4096 using an invalid PEM" do
+      encryption_strategy = "Rsa4096"
+      key = Cryppo.generate_encryption_key(encryption_strategy)
+      {:ok, pem} = Rsa4096.to_pem(key)
+
+      encrypted_data = @plain_data |> Cryppo.encrypt(encryption_strategy, pem)
+
+      assert %EncryptedData{} = encrypted_data,
+             "the result of Cryppo.encrypt(#{encryption_strategy}) is an EncryptedData struct"
+
+      assert Cryppo.decrypt(encrypted_data, "foobar") == {:error, :invalid_encryption_key}
+    end
+
+    test "encrypting with Rsa4096 using an invalid PEM" do
+      assert Cryppo.encrypt(@plain_data, "Rsa4096", "foobar") == {:error, :invalid_encryption_key}
     end
 
     test "Decrypting using the wrong key of the same strategy" do

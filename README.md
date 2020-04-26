@@ -24,6 +24,5 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 
 * Command line interface like for Cryppo.js
 * proper readme
-* load a PEM as a raw key
 * compatibility tests
 * Maybe: some other AES cipher

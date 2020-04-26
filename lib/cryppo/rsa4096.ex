@@ -34,7 +34,8 @@ defmodule Cryppo.Rsa4096 do
           {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
   @impl EncryptionStrategy
   def encrypt(data, %EncryptionKey{key: private_key})
-      when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey do
+      when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey and
+             tuple_size(private_key) == 11 do
     public_key = private_key_to_public_key(private_key)
     encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
 
@@ -51,10 +52,45 @@ defmodule Cryppo.Rsa4096 do
       do: private_key_to_public_key(private_key)
 
   def private_key_to_public_key(private_key)
-      when is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey do
+      when is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey and
+             tuple_size(private_key) == 11 do
     public_modulus = private_key |> elem(2)
     public_exponent = private_key |> elem(3)
     {:RSAPublicKey, public_modulus, public_exponent}
+  end
+
+  @spec to_pem(EncryptionKey.t() | rsa_private_key()) :: {:ok, binary}
+  def to_pem(%EncryptionKey{key: private_key}),
+    do: to_pem(private_key)
+
+  def to_pem(private_key)
+      when elem(private_key, 0) == :RSAPrivateKey and tuple_size(private_key) == 11 do
+    pem_entry = :public_key.pem_entry_encode(:RSAPrivateKey, private_key)
+    {:ok, :public_key.pem_encode([pem_entry])}
+  end
+
+  @spec from_pem(binary) :: {:ok, EncryptionKey.t()}
+  def from_pem(pem) when is_binary(pem) do
+    # with [pem_entry] <- :public_key.pem_decode(pem) do
+    #   encryption_key = %EncryptionKey{
+    #     encryption_strategy_module: __MODULE__,
+    #     key: :public_key.pem_entry_decode(pem_entry)
+    #   }
+
+    #   {:ok, encryption_key}
+    # end
+    case :public_key.pem_decode(pem) do
+      [pem_entry] ->
+        encryption_key = %EncryptionKey{
+          encryption_strategy_module: __MODULE__,
+          key: :public_key.pem_entry_decode(pem_entry)
+        }
+
+        {:ok, encryption_key}
+
+      _ ->
+        {:error, :invalid_encryption_key}
+    end
   end
 
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) :: {:ok, binary} | :decryption_error
@@ -75,7 +111,8 @@ defmodule Cryppo.Rsa4096 do
   end
 
   def sign(data, private_key)
-      when is_binary(data) and is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey do
+      when is_binary(data) and is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey and
+             tuple_size(private_key) == 11 do
     signature = :public_key.sign(data, :sha256, private_key)
     %RsaSignature{signature: signature, data: data}
   end
@@ -96,9 +133,13 @@ defmodule Cryppo.Rsa4096 do
   @impl EncryptionStrategy
   def build_encryption_key(private_key_in_erlang_format)
       when is_tuple(private_key_in_erlang_format) and
-             elem(private_key_in_erlang_format, 0) == :RSAPrivateKey do
+             elem(private_key_in_erlang_format, 0) == :RSAPrivateKey and
+             tuple_size(private_key_in_erlang_format) == 11 do
     {:ok, EncryptionKey.new(private_key_in_erlang_format, __MODULE__)}
   end
+
+  def build_encryption_key(maybe_pem) when is_binary(maybe_pem),
+    do: from_pem(maybe_pem)
 
   def build_encryption_key(_), do: {:error, :invalid_encryption_key}
 end
