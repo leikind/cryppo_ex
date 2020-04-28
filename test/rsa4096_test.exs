@@ -23,4 +23,17 @@ defmodule Rsa4096Test do
     assert restored_key.encryption_strategy_module == key.encryption_strategy_module
     assert restored_key.key == key.key
   end
+
+  test "different ways to decrypt" do
+    original_key = Cryppo.generate_encryption_key("Rsa4096")
+
+    encrypted_data = "this is love!" |> Cryppo.encrypt("Rsa4096", original_key)
+
+    {:ok, pem} = Rsa4096.to_pem(original_key)
+    {:ok, key_restored_from_pem} = Rsa4096.from_pem(pem)
+
+    assert Cryppo.decrypt(encrypted_data, original_key) == {:ok, "this is love!"}
+    assert Cryppo.decrypt(encrypted_data, key_restored_from_pem) == {:ok, "this is love!"}
+    assert Cryppo.decrypt(encrypted_data, pem) == {:ok, "this is love!"}
+  end
 end

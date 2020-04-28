@@ -11,7 +11,7 @@ defmodule Cryppo.Rsa4096 do
            integer, any}
   @type rsa_public_key() :: {:RSAPublicKey, integer, integer}
 
-  use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
+  use Cryppo.EncryptionStrategy, strategy_name: "Rsa4096"
   alias Cryppo.RsaSignature
 
   # 4096 is the key size in ruby Cryppo
@@ -71,14 +71,6 @@ defmodule Cryppo.Rsa4096 do
 
   @spec from_pem(binary) :: {:ok, EncryptionKey.t()}
   def from_pem(pem) when is_binary(pem) do
-    # with [pem_entry] <- :public_key.pem_decode(pem) do
-    #   encryption_key = %EncryptionKey{
-    #     encryption_strategy_module: __MODULE__,
-    #     key: :public_key.pem_entry_decode(pem_entry)
-    #   }
-
-    #   {:ok, encryption_key}
-    # end
     case :public_key.pem_decode(pem) do
       [pem_entry] ->
         encryption_key = %EncryptionKey{

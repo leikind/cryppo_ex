@@ -1,7 +1,7 @@
 defmodule ProposalTest do
   use ExUnit.Case
 
-  alias Cryppo.{Loader, Serialization, Yaml}
+  alias Cryppo.{Loader, Serialization}
 
   test "what's inside" do
     data_encrypted_with_derived_key =
@@ -9,7 +9,7 @@ defmodule ProposalTest do
 
     serialized = Serialization.serialize(data_encrypted_with_derived_key)
 
-    [_, _, encryption_artefacts, _, derivation_artefacts] = String.split(serialized, ".")
+    # [_, _, encryption_artefacts, _, derivation_artefacts] = String.split(serialized, ".")
 
     restored = Loader.load(serialized)
 
