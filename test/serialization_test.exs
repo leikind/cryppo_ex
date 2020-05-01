@@ -139,12 +139,11 @@ defmodule SerializationTest do
       assert %EncryptedDataWithDerivedKey{} = encrypted_data,
              "encrypted_data is a EncryptedDataWithDerivedKey struct"
 
-      serialized = Cryppo.serialize(encrypted_data)
-
-      loaded_encrypted_data = Cryppo.load(serialized)
-
       {:ok, decrypted, _derived_key} =
-        Cryppo.decrypt_with_derived_key("my passphrase", loaded_encrypted_data)
+        encrypted_data
+        |> Cryppo.serialize()
+        |> Cryppo.load()
+        |> Cryppo.decrypt_with_derived_key("my passphrase")
 
       assert decrypted == @plain_data
     end

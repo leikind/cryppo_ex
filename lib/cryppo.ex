@@ -100,13 +100,12 @@ defmodule Cryppo do
     end
   end
 
-  @spec decrypt_with_derived_key(binary, Cryppo.EncryptedDataWithDerivedKey.t()) ::
+  @spec decrypt_with_derived_key(EncryptedDataWithDerivedKey.t(), String.t()) ::
           {:ok, binary, DerivedKey.t()}
           | :decryption_error
           | {:decryption_error, {any, any}}
           | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
   def decrypt_with_derived_key(
-        passphrase,
         %EncryptedDataWithDerivedKey{
           derived_key:
             %DerivedKey{
@@ -116,7 +115,8 @@ defmodule Cryppo do
             %EncryptedData{
               encryption_strategy_module: encryption_strategy_mod
             } = encrypted_data
-        }
+        },
+        passphrase
       )
       when is_binary(passphrase) do
     derived_key =
@@ -134,9 +134,12 @@ defmodule Cryppo do
     end
   end
 
-  @spec sign_with_private_key(binary, EncryptionKey.t()) :: RsaSignature.t()
-  def sign_with_private_key(data, private_key), do: Rsa4096.sign(data, private_key)
+  @spec sign_with_private_key(binary, Rsa4096.rsa_private_key() | EncryptionKey.t() | String.t()) ::
+          RsaSignature.t() | {:error, :invalid_encryption_key}
+  def sign_with_private_key(data, private_key),
+    do: Rsa4096.sign(data, private_key)
 
+  # TODO accept all kind of formats including private keys
   @spec verify_rsa_signature(RsaSignature.t(), Rsa4096.rsa_public_key()) :: boolean()
   def verify_rsa_signature(rsa_signature, public_key),
     do: Rsa4096.verify(rsa_signature, public_key)

@@ -23,6 +23,7 @@ be found at [https://hexdocs.pm/cryppo_ex](https://hexdocs.pm/cryppo_ex).
 ## TODO
 
 * Command line interface like for Cryppo.js
+* verify_rsa_signature should take all key formats
 * proper readme
 * compatibility tests
 * Maybe: some other AES cipher

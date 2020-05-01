@@ -7,8 +7,8 @@ defmodule Cryppo.DerivationStrategy do
   alias Cryppo.DerivedKey
 
   @callback strategy_name :: binary
-  @callback generate_derived_key(binary) :: DerivedKey.t()
-  @callback build_derived_key(binary, DerivedKey.t()) :: DerivedKey.t()
+  @callback generate_derived_key(String.t()) :: DerivedKey.t()
+  @callback build_derived_key(String.t(), DerivedKey.t()) :: DerivedKey.t()
 
   @spec __using__([{:strategy_name, binary}]) :: any
   defmacro __using__(strategy_name: strategy_name) when is_binary(strategy_name) do

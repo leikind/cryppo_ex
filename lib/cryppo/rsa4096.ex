@@ -69,7 +69,7 @@ defmodule Cryppo.Rsa4096 do
     {:ok, :public_key.pem_encode([pem_entry])}
   end
 
-  @spec from_pem(binary) :: {:ok, EncryptionKey.t()}
+  @spec from_pem(binary) :: {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
   def from_pem(pem) when is_binary(pem) do
     case :public_key.pem_decode(pem) do
       [pem_entry] ->
@@ -97,15 +97,22 @@ defmodule Cryppo.Rsa4096 do
 
   def decrypt(_, _), do: :decryption_error
 
-  @spec sign(binary, rsa_private_key() | EncryptionKey.t()) :: RsaSignature.t()
-  def sign(data, %EncryptionKey{encryption_strategy_module: __MODULE__, key: private_key}) do
-    sign(data, private_key)
+  @spec sign(binary, rsa_private_key() | EncryptionKey.t() | String.t()) ::
+          RsaSignature.t() | {:error, :invalid_encryption_key}
+  def sign(data, maybe_pem) when is_binary(data) and is_binary(maybe_pem) do
+    with {:ok, encryption_key} <- from_pem(maybe_pem) do
+      sign(data, encryption_key)
+    end
   end
 
-  def sign(data, private_key)
-      when is_binary(data) and is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey and
-             tuple_size(private_key) == 11 do
-    signature = :public_key.sign(data, :sha256, private_key)
+  def sign(data, %EncryptionKey{encryption_strategy_module: __MODULE__, key: private_key}),
+    do: sign(data, private_key)
+
+  def sign(data, private_key_erlang_tuple)
+      when is_binary(data) and is_tuple(private_key_erlang_tuple) and
+             elem(private_key_erlang_tuple, 0) == :RSAPrivateKey and
+             tuple_size(private_key_erlang_tuple) == 11 do
+    signature = :public_key.sign(data, :sha256, private_key_erlang_tuple)
     %RsaSignature{signature: signature, data: data}
   end
 

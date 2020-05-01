@@ -1,7 +1,19 @@
 defmodule CompatTest do
   use ExUnit.Case
 
-  # alias Cryppo.EncryptionKey
+  # Ruby Cryppo ==> Elixir Cryppo
+  # Aes256         ✔️
+  # Rsa4096        ✔️
+  # Pbkdf2hmac     ✔️
+  # RSA signature  ✔️
+
+  # Elixir Cryppo ==> Ruby Cryppo
+  # Aes256
+  # Rsa4096
+  # Pbkdf2hmac
+  # RSA signature
+
+  alias Cryppo.{DerivedKey, Rsa4096}
 
   test "can decrypt a serialized encrypted value encrypted with Aes256Gcm by Ruby Cryppo" do
     {:ok, key} = Base.url_decode64("S5-0MiMs1jkg52bB9nzl1IoNYzxfSyxuoIx6Tvj2vCk=")
@@ -36,5 +48,30 @@ defmodule CompatTest do
     ser = Cryppo.Serialization.serialize(encrypted)
     restored_encrypted = Cryppo.Loader.load(ser)
     assert Cryppo.decrypt(restored_encrypted, pem) == {:ok, "this is love"}
+  end
+
+  test "decrypt a a value encrypted and serialized with ruby Cryppo" do
+    {:ok, decrypted, derived_key} =
+      "Aes256Gcm.8nGHS3XRrIdmSqju.LS0tCml2OiAhYmluYXJ5IHwtCiAgcWFFR0tZeklzMEVQdTFoYgphdDogIWJpbmFyeSB8LQogIGUxeVBxMGVJM2F1S3BVZ0pUYitXR1E9PQphZDogbm9uZQo=.Pbkdf2Hmac.LS0tCml2OiAhYmluYXJ5IHwtCiAgMzdzZTd0N25jMUZWT1NkNldjUUQ1UkpNWVZzPQppOiAyMDg2NwpsOiAzMgo="
+      |> Cryppo.load()
+      |> Cryppo.decrypt_with_derived_key("this is a passphrase")
+
+    assert decrypted == "this is love"
+    assert %DerivedKey{} = derived_key
+  end
+
+  test "verify a signature signed with Ruby Cryppo" do
+    pem =
+      "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
+
+    serialized_signature =
+      "Sign.Rsa4096.mtCOwALUET6JYR_K9AfSYapAmde7xKUPaeEzZqbdqkwiGGmmwDPKbrZFv_mMA61lA1ojHokUod38zB8HPYffPd7GBZZMCpa02iO076_Ue-HCJBVNf1Y-VcVGcNq5DJXs4l0hUl8pPkZ_MUN6om_BDZLtGnTndqookdM6NLQ3qa7pHZKoBgkfEeBbC4XDgU0YCWBk9QL_VLZYHbyVwM-YFlyFzsMMa9QH6HQp6pAnvRarQjAXAnhGK6cespifx6xvRa7xuTQAAxtruh-QOgh0IXiFGaHScdE6fEj1OlJVDE2TtCJAe9eTffnAgzp2FyIU1ASi87xjVWVO0ckxyH7GqR8-_Ol7U-nW_cn2grDY6EOKQdIV-ViSL5buw53nEBtwR3S4rHXsx6qhywnZS5nDFk-k6NSFiyPUcn_aZV-jOTsFM5I9smy0N2PyTaoAe5-x2-53cZ7yaFr6MKE_cWrYEdVss1YepIFtd60VFmqyWqUN_AdZk6Ixg7FEKAx5F1nyHfbKsZAGUk5zH4r84Xqxh0avduZk3ZaOca9Ax6oEKg7zHJYBiygputqr_NUH1Mv_NGeZndcoOOO4rm0MnH6JeiD92WpxCCgRxSnYUhh-7ZOHeco_oo7N5IHX_D_6PlBm5zLy48UKDdfZmApZmWOMY_cjnFGrLII4ftYISDzTYy0=.dGhpcyBpcyBsb3Zl"
+
+    {:ok, private_key} = Rsa4096.from_pem(pem)
+    public_key_erlang_tuple = Rsa4096.private_key_to_public_key(private_key)
+
+    signature = Cryppo.load(serialized_signature)
+
+    assert Cryppo.verify_rsa_signature(signature, public_key_erlang_tuple) == true
   end
 end

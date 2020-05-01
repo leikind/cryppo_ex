@@ -29,7 +29,7 @@ defmodule Cryppo.Pbkdf2hmac do
   @spec hash_function :: binary
   def hash_function, do: "SHA256"
 
-  @spec generate_derived_key(binary) :: DerivedKey.t()
+  @spec generate_derived_key(String.t()) :: DerivedKey.t()
   @impl DerivationStrategy
   def generate_derived_key(passphrase) do
     salt = make_salt()
@@ -37,7 +37,7 @@ defmodule Cryppo.Pbkdf2hmac do
     passphrase |> derive_and_build_derived_key(salt, iterations, @key_length)
   end
 
-  @spec build_derived_key(binary, DerivedKey.t()) :: DerivedKey.t()
+  @spec build_derived_key(String.t(), DerivedKey.t()) :: DerivedKey.t()
   @impl DerivationStrategy
   def build_derived_key(
         _passphrase,
@@ -58,7 +58,7 @@ defmodule Cryppo.Pbkdf2hmac do
     passphrase |> derive_and_build_derived_key(salt, iterations, key_length)
   end
 
-  @spec derive_and_build_derived_key(binary, binary, integer, integer) :: DerivedKey.t()
+  @spec derive_and_build_derived_key(String.t(), binary, integer, integer) :: DerivedKey.t()
   defp derive_and_build_derived_key(passphrase, salt, iterations, key_length) do
     {:ok, pdk} =
       :pbkdf2.pbkdf2(
