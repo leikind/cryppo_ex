@@ -5,12 +5,14 @@ defmodule Cryppo.MixProject do
     [
       app: :cryppo_ex,
       version: "0.1.0",
-      elixir: "~> 1.10",
-      deps: deps()
-      # name: "CryppoEx",
-      # description: description(),
-      # package: package(),
-      # docs: [extras: ["README.md"]]
+      elixir: ">= 1.5.0",
+      deps: deps(),
+      name: "CryppoEx",
+      description: "Encryption library for the Meeco platform",
+      package: package(),
+      homepage_url: "https://github.com/leikind/cryppo_ex",
+      source_url: "https://github.com/leikind/cryppo_ex",
+      docs: [extras: ["README.md"]]
     ]
   end
 
@@ -22,10 +24,20 @@ defmodule Cryppo.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.1.0", only: :dev},
       {:pbkdf2, "~> 2.0"},
       {:yamerl, "~> 0.8"},
+      {:credo, "~> 1.1.0", only: :dev},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Yuri Leikind"],
+      licenses: ["Apache-2.0"],
+      links: %{
+        "Github" => "https://github.com/leikind/cryppo_ex"
+      }
     ]
   end
 end

@@ -1,18 +1,6 @@
 defmodule CompatTest do
   use ExUnit.Case
 
-  # Ruby Cryppo ==> Elixir Cryppo
-  # Aes256         ✔️
-  # Rsa4096        ✔️
-  # Pbkdf2hmac     ✔️
-  # RSA signature  ✔️
-
-  # Elixir Cryppo ==> Ruby Cryppo
-  # Aes256
-  # Rsa4096
-  # Pbkdf2hmac
-  # RSA signature
-
   alias Cryppo.{DerivedKey, Rsa4096}
 
   test "can decrypt a serialized encrypted value encrypted with Aes256Gcm by Ruby Cryppo" do
@@ -50,7 +38,7 @@ defmodule CompatTest do
     assert Cryppo.decrypt(restored_encrypted, pem) == {:ok, "this is love"}
   end
 
-  test "decrypt a a value encrypted and serialized with ruby Cryppo" do
+  test "decrypt a value encrypted with a derived key and serialized with ruby Cryppo" do
     {:ok, decrypted, derived_key} =
       "Aes256Gcm.8nGHS3XRrIdmSqju.LS0tCml2OiAhYmluYXJ5IHwtCiAgcWFFR0tZeklzMEVQdTFoYgphdDogIWJpbmFyeSB8LQogIGUxeVBxMGVJM2F1S3BVZ0pUYitXR1E9PQphZDogbm9uZQo=.Pbkdf2Hmac.LS0tCml2OiAhYmluYXJ5IHwtCiAgMzdzZTd0N25jMUZWT1NkNldjUUQ1UkpNWVZzPQppOiAyMDg2NwpsOiAzMgo="
       |> Cryppo.load()

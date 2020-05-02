@@ -284,7 +284,45 @@ defmodule CryppoTest do
       assert Cryppo.verify_rsa_signature(rsa_signature, public_key) == true
     end
 
-    test "a different public key" do
+    test "sign data with a private key and then verify with the private key in the Erlang format" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      private_key_tuple = private_key.key
+
+      assert Cryppo.verify_rsa_signature(rsa_signature, private_key_tuple) == true
+    end
+
+    test "sign data with a private key and then verify with the private key as an EncryptionKey" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      assert Cryppo.verify_rsa_signature(rsa_signature, private_key) == true
+    end
+
+    test "sign data with a private key and then verify with the private key as a PEM" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      {:ok, pem} = Rsa4096.to_pem(private_key)
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      assert Cryppo.verify_rsa_signature(rsa_signature, pem) == true
+    end
+
+    test "sign data with a private key and then verify with the public key as a PEM" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      {:ok, pem} = private_key |> Cryppo.private_key_to_public_key() |> Rsa4096.to_pem()
+
+      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+
+      assert Cryppo.verify_rsa_signature(rsa_signature, pem) == true
+    end
+
+    test "verify with a different public key" do
       private_key = Cryppo.generate_encryption_key("Rsa4096")
 
       rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)

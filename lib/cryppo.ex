@@ -134,13 +134,18 @@ defmodule Cryppo do
     end
   end
 
-  @spec sign_with_private_key(binary, Rsa4096.rsa_private_key() | EncryptionKey.t() | String.t()) ::
+  @spec sign_with_private_key(
+          binary,
+          Rsa4096.rsa_private_key() | EncryptionKey.t() | Rsa4096.pem()
+        ) ::
           RsaSignature.t() | {:error, :invalid_encryption_key}
   def sign_with_private_key(data, private_key),
     do: Rsa4096.sign(data, private_key)
 
-  # TODO accept all kind of formats including private keys
-  @spec verify_rsa_signature(RsaSignature.t(), Rsa4096.rsa_public_key()) :: boolean()
+  @spec verify_rsa_signature(
+          RsaSignature.t(),
+          Rsa4096.rsa_public_key() | Rsa4096.rsa_private_key() | EncryptionKey.t() | Rsa4096.pem()
+        ) :: boolean() | {:error, :invalid_encryption_key}
   def verify_rsa_signature(rsa_signature, public_key),
     do: Rsa4096.verify(rsa_signature, public_key)
 

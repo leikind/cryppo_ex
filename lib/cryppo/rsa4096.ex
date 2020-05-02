@@ -10,6 +10,7 @@ defmodule Cryppo.Rsa4096 do
           {:RSAPrivateKey, integer, integer, integer, integer, integer, integer, integer, integer,
            integer, any}
   @type rsa_public_key() :: {:RSAPublicKey, integer, integer}
+  @type pem() :: String.t()
 
   use Cryppo.EncryptionStrategy, strategy_name: "Rsa4096"
   alias Cryppo.RsaSignature
@@ -59,17 +60,17 @@ defmodule Cryppo.Rsa4096 do
     {:RSAPublicKey, public_modulus, public_exponent}
   end
 
-  @spec to_pem(EncryptionKey.t() | rsa_private_key()) :: {:ok, binary}
-  def to_pem(%EncryptionKey{key: private_key}),
-    do: to_pem(private_key)
+  @spec to_pem(EncryptionKey.t() | rsa_private_key() | rsa_public_key()) :: {:ok, pem()}
+  def to_pem(%EncryptionKey{key: key}),
+    do: to_pem(key)
 
-  def to_pem(private_key)
-      when elem(private_key, 0) == :RSAPrivateKey and tuple_size(private_key) == 11 do
-    pem_entry = :public_key.pem_entry_encode(:RSAPrivateKey, private_key)
+  def to_pem(key)
+      when is_tuple(key) and (elem(key, 0) == :RSAPrivateKey or elem(key, 0) == :RSAPublicKey) do
+    pem_entry = key |> elem(0) |> :public_key.pem_entry_encode(key)
     {:ok, :public_key.pem_encode([pem_entry])}
   end
 
-  @spec from_pem(binary) :: {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
+  @spec from_pem(pem) :: {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
   def from_pem(pem) when is_binary(pem) do
     case :public_key.pem_decode(pem) do
       [pem_entry] ->
@@ -97,7 +98,7 @@ defmodule Cryppo.Rsa4096 do
 
   def decrypt(_, _), do: :decryption_error
 
-  @spec sign(binary, rsa_private_key() | EncryptionKey.t() | String.t()) ::
+  @spec sign(binary, rsa_private_key() | EncryptionKey.t() | pem()) ::
           RsaSignature.t() | {:error, :invalid_encryption_key}
   def sign(data, maybe_pem) when is_binary(data) and is_binary(maybe_pem) do
     with {:ok, encryption_key} <- from_pem(maybe_pem) do
@@ -116,15 +117,34 @@ defmodule Cryppo.Rsa4096 do
     %RsaSignature{signature: signature, data: data}
   end
 
-  @spec verify(RsaSignature.t(), rsa_public_key) :: boolean()
-  def verify(%RsaSignature{data: data, signature: signature}, public_key) do
+  @spec verify(RsaSignature.t(), rsa_public_key | rsa_private_key | EncryptionKey.t() | pem) ::
+          boolean() | {:error, :invalid_encryption_key}
+  def verify(%RsaSignature{data: data, signature: signature}, public_key),
+    do: verify(data, signature, public_key)
+
+  @spec verify(binary, binary, rsa_public_key | rsa_private_key | EncryptionKey.t() | pem) ::
+          boolean() | {:error, :invalid_encryption_key}
+
+  defp verify(data, signature, maybe_pem) when is_binary(maybe_pem) do
+    with {:ok, encryption_key} <- from_pem(maybe_pem),
+         do: verify(data, signature, encryption_key)
+  end
+
+  defp verify(data, signature, %EncryptionKey{
+         encryption_strategy_module: __MODULE__,
+         key: private_key
+       }),
+       do: verify(data, signature, private_key)
+
+  defp verify(data, signature, private_key)
+       when is_tuple(private_key) and elem(private_key, 0) == :RSAPrivateKey do
+    public_key = private_key_to_public_key(private_key)
     verify(data, signature, public_key)
   end
 
-  @spec verify(binary, binary, rsa_public_key) :: boolean()
-  def verify(data, signature, public_key)
-      when is_binary(data) and is_binary(signature) and is_tuple(public_key) and
-             elem(public_key, 0) == :RSAPublicKey do
+  defp verify(data, signature, public_key)
+       when is_binary(data) and is_binary(signature) and is_tuple(public_key) and
+              elem(public_key, 0) == :RSAPublicKey do
     :public_key.verify(data, :sha256, signature, public_key)
   end
 
