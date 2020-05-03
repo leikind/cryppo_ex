@@ -60,6 +60,6 @@ defmodule CompatTest do
 
     signature = Cryppo.load(serialized_signature)
 
-    assert Cryppo.verify_rsa_signature(signature, public_key_erlang_tuple) == true
+    assert Rsa4096.verify(signature, public_key_erlang_tuple) == true
   end
 end

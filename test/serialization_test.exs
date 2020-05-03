@@ -153,7 +153,7 @@ defmodule SerializationTest do
     test "serializes the data" do
       private_key = Cryppo.generate_encryption_key("Rsa4096")
 
-      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+      rsa_signature = Rsa4096.sign(@plain_data, private_key)
 
       serialized = Cryppo.serialize(rsa_signature)
 
@@ -172,7 +172,7 @@ defmodule SerializationTest do
     test "sign, serialize, de-serialize, and verify" do
       private_key = Cryppo.generate_encryption_key("Rsa4096")
 
-      rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
+      rsa_signature = Rsa4096.sign(@plain_data, private_key)
 
       serialized = Cryppo.serialize(rsa_signature)
 
@@ -180,7 +180,7 @@ defmodule SerializationTest do
       assert restored_rsa_signature == rsa_signature
 
       public_key = Rsa4096.private_key_to_public_key(private_key)
-      assert Cryppo.verify_rsa_signature(restored_rsa_signature, public_key) == true
+      assert Rsa4096.verify(restored_rsa_signature, public_key) == true
     end
   end
 end

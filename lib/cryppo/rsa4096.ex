@@ -2,9 +2,9 @@ defmodule Cryppo.Rsa4096 do
   @moduledoc """
   Encryption strategy RSA with 4096-bit keys and some RSA-specific functions
 
-  For encryption, decryption, signing, and verification please use functions in module `Cryppo`.
-  This module has been included into documentation because of a few RSA-specific helper functions which go
-  beyond the behavior of an Encryption Strategy.
+  For encryption and decryption please use functions in module `Cryppo`.
+  This module also contains logic for PEMs, singing and verification.
+
   """
 
   # Key length 4096
@@ -68,6 +68,7 @@ defmodule Cryppo.Rsa4096 do
   def encrypt(_, _), do: :encryption_error
 
   @doc """
+  Extracts a public key from a private key
 
   Extracts a public key from a `Cryppo.EncryptionKey` struct with an RSA private key or from an
   RSA private key in the native Erlang type `t:rsa_private_key/0`
@@ -199,7 +200,10 @@ defmodule Cryppo.Rsa4096 do
 
   def decrypt(_, _), do: :decryption_error
 
-  @doc false
+  @doc """
+  Signs data with a private key
+
+  """
   @spec sign(binary, rsa_private_key() | EncryptionKey.t() | pem()) ::
           RsaSignature.t() | {:error, :invalid_encryption_key}
   def sign(data, maybe_pem) when is_binary(data) and is_binary(maybe_pem) do
@@ -219,7 +223,11 @@ defmodule Cryppo.Rsa4096 do
     %RsaSignature{signature: signature, data: data}
   end
 
-  @doc false
+  @doc """
+  Verifies an RSA signature with a public key
+
+  """
+
   @spec verify(RsaSignature.t(), rsa_public_key | rsa_private_key | EncryptionKey.t() | pem) ::
           boolean() | {:error, :invalid_encryption_key}
   def verify(%RsaSignature{data: data, signature: signature}, public_key),

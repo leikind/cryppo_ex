@@ -9,7 +9,6 @@ defmodule Cryppo do
     EncryptedDataWithDerivedKey,
     EncryptionKey,
     Loader,
-    Rsa4096,
     RsaSignature,
     Serialization,
     Strategies
@@ -133,21 +132,6 @@ defmodule Cryppo do
       {:ok, decrypted, derived_key}
     end
   end
-
-  @spec sign_with_private_key(
-          binary,
-          Rsa4096.rsa_private_key() | EncryptionKey.t() | Rsa4096.pem()
-        ) ::
-          RsaSignature.t() | {:error, :invalid_encryption_key}
-  def sign_with_private_key(data, private_key),
-    do: Rsa4096.sign(data, private_key)
-
-  @spec verify_rsa_signature(
-          RsaSignature.t(),
-          Rsa4096.rsa_public_key() | Rsa4096.rsa_private_key() | EncryptionKey.t() | Rsa4096.pem()
-        ) :: boolean() | {:error, :invalid_encryption_key}
-  def verify_rsa_signature(rsa_signature, public_key),
-    do: Rsa4096.verify(rsa_signature, public_key)
 
   @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t()) ::
           binary
