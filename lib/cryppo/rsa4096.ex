@@ -117,7 +117,6 @@ defmodule Cryppo.Rsa4096 do
   * a public key as native Erlang type `t:rsa_public_key/0`
   * a private key as native Erlang type `t:rsa_private_key/0`
 
-
   ## Examples
 
   With a `Cryppo.EncryptionKey` struct
@@ -203,6 +202,44 @@ defmodule Cryppo.Rsa4096 do
   @doc """
   Signs data with a private key
 
+  The private key can be one of the following:
+
+  * a `Cryppo.EncryptionKey` struct
+  * a private key as native Erlang type `t:rsa_private_key/0`
+  * a PEM with a private RSA key
+
+  ## Examples
+
+  With a `Cryppo.EncryptionKey` struct:
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Rsa4096")
+      iex> _signature = %Cryppo.RsaSignature{} = Cryppo.Rsa4096.sign("data to sign", encryption_key)
+
+
+  With a private key as native Erlang type `t:rsa_private_key/0`
+
+      iex> private_key = :public_key.generate_key({:rsa, 4_096, 65_537})
+      iex> _signature = %Cryppo.RsaSignature{} = Cryppo.Rsa4096.sign("data to sign", private_key)
+
+  With a PEM
+
+      iex> pem = "-----BEGIN RSA PRIVATE KEY-----\\n" <>
+      ...>       "MIICWwIBAAKBgQDKCUh7F4p5btzcSLBaToHvD3rCZX4fMaDtjkN5TwmC3/6iQzD5\\n" <>
+      ...>       "tn396BzDTdQ16HuuZ+eN+KQSa1QWr2h1DB13nVP+moeyLVC8BShiM3NBRn77r7Lr\\n" <>
+      ...>       "sWooM3mwnSvMPWWnBj1c+0tbO7zfur5wQdzBl66HrHgHt+Bz6f+dDj+aVwIDAQAB\\n" <>
+      ...>       "AoGAMHh3rihgrW9+h07dGF1baOoyzm6hCoTSkguefn0K0B5DLdSm7FHu+jp0pBqI\\n" <>
+      ...>       "/gHvolEFSZdMbarYOrUMf4BPlRSarCjjxf/beV4Pj/UQrCkDmNBBVJp33Sy8HEdb\\n" <>
+      ...>       "Wrzk+k8NcAS1UR4R6EW9JrUz0mMwX6CsvG2zZMbpS/Q9KXkCQQDwmCXjOTPQ+bxW\\n" <>
+      ...>       "K4gndHnXD5QkKNcTdFq64ef23R6AY0XEGkiRLDXZZA09hDIACgSSfk1Qbo0SJSvU\\n" <>
+      ...>       "TAR8A6clAkEA1vkWJ5qUo+xuIZB+2604LRco1GYAj5/fZ2kvUMjbOdCFgFaDVzJY\\n" <>
+      ...>       "X2pzLkk7RZNgPvXcRAgX7FlWmm4jwZzQywJARrHeSCMRx7DqF0PZUQaXmorYU7uw\\n" <>
+      ...>       "XuYMluc0WsRkZwNEh7fVZNrhw8vzXAUREBPhfg4gt6aUSyWi+FGR68LDBQJAC55O\\n" <>
+      ...>       "ujk6i1l94kaC9LB59sXnqQMSSLDlTBt9OSqB3rAMZxFF6/KGoDGKpBfFIk+CxiRX\\n" <>
+      ...>       "kT22vUleyt3lBNPK3QJAEr56asvREcIDFkbs7Ebjev4U1PL58w78ipp49Ti5FiwH\\n" <>
+      ...>       "vR9vuGcUcIDcWKOl05t4D35F5A/DskP6dGYA1cuWNg==\\n" <>
+      ...>       "-----END RSA PRIVATE KEY-----\\n\\n"
+      ...> _signature = %Cryppo.RsaSignature{} = Cryppo.Rsa4096.sign("data to sign", pem)
+
   """
   @spec sign(binary, rsa_private_key() | EncryptionKey.t() | pem()) ::
           RsaSignature.t() | {:error, :invalid_encryption_key}
@@ -226,6 +263,60 @@ defmodule Cryppo.Rsa4096 do
   @doc """
   Verifies an RSA signature with a public key
 
+  The key for verification can be pretty much any format and type, private keys are also accepted:
+
+  * native Erlang types `t:rsa_private_key/0` and `t:rsa_public_key/0`
+  * `Cryppo.EncryptionKey` structs
+  * PEMs
+
+    ## Examples
+
+  With a public key in the Erlang format:
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Rsa4096")
+      iex> signature = Cryppo.Rsa4096.sign("data to sign", encryption_key)
+      iex> public_key = Cryppo.Rsa4096.private_key_to_public_key(encryption_key)
+      iex> Cryppo.Rsa4096.verify(signature, public_key)
+      true
+
+  With a private key in the Erlang format:
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Rsa4096")
+      iex> signature = Cryppo.Rsa4096.sign("data to sign", encryption_key)
+      iex> Cryppo.Rsa4096.verify(signature, encryption_key.key)
+      true
+
+  With a `Cryppo.EncryptionKey` struct:
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Rsa4096")
+      iex> signature = Cryppo.Rsa4096.sign("data to sign", encryption_key)
+      iex> Cryppo.Rsa4096.verify(signature, encryption_key)
+      true
+
+  With a PEM
+
+      iex> pem_with_private_key = "-----BEGIN RSA PRIVATE KEY-----\\n" <>
+      ...>       "MIICWwIBAAKBgQDKCUh7F4p5btzcSLBaToHvD3rCZX4fMaDtjkN5TwmC3/6iQzD5\\n" <>
+      ...>       "tn396BzDTdQ16HuuZ+eN+KQSa1QWr2h1DB13nVP+moeyLVC8BShiM3NBRn77r7Lr\\n" <>
+      ...>       "sWooM3mwnSvMPWWnBj1c+0tbO7zfur5wQdzBl66HrHgHt+Bz6f+dDj+aVwIDAQAB\\n" <>
+      ...>       "AoGAMHh3rihgrW9+h07dGF1baOoyzm6hCoTSkguefn0K0B5DLdSm7FHu+jp0pBqI\\n" <>
+      ...>       "/gHvolEFSZdMbarYOrUMf4BPlRSarCjjxf/beV4Pj/UQrCkDmNBBVJp33Sy8HEdb\\n" <>
+      ...>       "Wrzk+k8NcAS1UR4R6EW9JrUz0mMwX6CsvG2zZMbpS/Q9KXkCQQDwmCXjOTPQ+bxW\\n" <>
+      ...>       "K4gndHnXD5QkKNcTdFq64ef23R6AY0XEGkiRLDXZZA09hDIACgSSfk1Qbo0SJSvU\\n" <>
+      ...>       "TAR8A6clAkEA1vkWJ5qUo+xuIZB+2604LRco1GYAj5/fZ2kvUMjbOdCFgFaDVzJY\\n" <>
+      ...>       "X2pzLkk7RZNgPvXcRAgX7FlWmm4jwZzQywJARrHeSCMRx7DqF0PZUQaXmorYU7uw\\n" <>
+      ...>       "XuYMluc0WsRkZwNEh7fVZNrhw8vzXAUREBPhfg4gt6aUSyWi+FGR68LDBQJAC55O\\n" <>
+      ...>       "ujk6i1l94kaC9LB59sXnqQMSSLDlTBt9OSqB3rAMZxFF6/KGoDGKpBfFIk+CxiRX\\n" <>
+      ...>       "kT22vUleyt3lBNPK3QJAEr56asvREcIDFkbs7Ebjev4U1PL58w78ipp49Ti5FiwH\\n" <>
+      ...>       "vR9vuGcUcIDcWKOl05t4D35F5A/DskP6dGYA1cuWNg==\\n" <>
+      ...>       "-----END RSA PRIVATE KEY-----\\n\\n"
+      ...> signature = Cryppo.Rsa4096.sign("data to sign", pem_with_private_key)
+      ...> {:ok, key} = Cryppo.Rsa4096.from_pem(pem_with_private_key)
+      ...> {:ok, pem_with_public_key} = key
+      ...> |> Cryppo.Rsa4096.private_key_to_public_key()
+      ...> |> Cryppo.Rsa4096.to_pem()
+      ...> Cryppo.Rsa4096.verify(signature, pem_with_public_key)
+      true
   """
 
   @spec verify(RsaSignature.t(), rsa_public_key | rsa_private_key | EncryptionKey.t() | pem) ::
