@@ -3,6 +3,8 @@ defmodule CryppoTest do
 
   alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, EncryptionKey, Rsa4096}
 
+  doctest Cryppo
+
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
   @plain_data "Hello world!"

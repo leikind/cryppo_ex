@@ -16,15 +16,37 @@ defmodule Cryppo do
 
   import Strategies, only: [find_strategy: 1, find_key_derivation_strategy: 1]
 
+  @typedoc """
+  Name of an encryption or derivation strategy
+
+  Use `Cryppo.encryption_strategies/0` to get a list of encryption strategies.
+  Use `Cryppo.derivation_strategies/0` to get a list of derivation strategies.
+  """
+
   @type encryption_strategy() :: String.t()
+
+  @typedoc """
+  Module of an encryption or derivation strategy
+  """
   @type encryption_strategy_module() :: atom
 
+  @doc "List available encryption strategies"
   @spec encryption_strategies :: [encryption_strategy()]
   def encryption_strategies, do: Strategies.encryption_strategies()
 
+  @doc "List available derivation strategies"
   @spec derivation_strategies :: [encryption_strategy()]
   def derivation_strategies, do: Strategies.derivation_strategies()
 
+  @doc """
+  Generate an encryption key for an encryption strategy
+
+  The generated encrypted key is marked as belonging to the encryption strategy.
+
+  ## Example
+
+      iex> _encryption_key = Cryppo.generate_encryption_key("Aes256Gcm")
+  """
   @spec generate_encryption_key(encryption_strategy) ::
           EncryptionKey.t() | {:unsupported_encryption_strategy, binary}
   def generate_encryption_key(encryption_strategy) when is_binary(encryption_strategy) do
@@ -33,6 +55,20 @@ defmodule Cryppo do
     end
   end
 
+  @doc """
+  Encrypt data with an encryption key
+
+  ## Example
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Aes256Gcm")
+      iex> _encrypted_data = Cryppo.encrypt("data to encrypt", "Aes256Gcm", encryption_key)
+
+  The encryption key must match the encryption strategy:
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Aes256Gcm")
+      iex> Cryppo.encrypt("data to encrypt", "Rsa4096", encryption_key)
+      {:incompatible_key, [submitted_key_strategy: Cryppo.Aes256gcm, encryption_strategy: Cryppo.Rsa4096]}
+  """
   @spec encrypt(binary, encryption_strategy, EncryptionKey.t() | any) ::
           EncryptedData.t()
           | {:unsupported_encryption_strategy, atom}
@@ -46,6 +82,13 @@ defmodule Cryppo do
     end
   end
 
+  @doc """
+  Generate an encryption key for an encryption strategy and encrypt data with this encryption key
+
+  ## Example
+
+      iex> {_encrypted_data, _encryption_key} = Cryppo.encrypt("data to encrypt", "Aes256Gcm")
+  """
   @spec encrypt(binary, encryption_strategy) ::
           EncryptedData.t()
           | {:unsupported_encryption_strategy, atom}
@@ -59,6 +102,15 @@ defmodule Cryppo do
     end
   end
 
+  @doc """
+  Decrypt encrypted data with an encryption key
+
+  ## Example
+
+      iex> {encrypted_data, encryption_key} = Cryppo.encrypt("data to encrypt", "Aes256Gcm")
+      iex> Cryppo.decrypt(encrypted_data, encryption_key)
+      {:ok, "data to encrypt"}
+  """
   @spec decrypt(EncryptedData.t(), EncryptionKey.t() | any) ::
           {:ok, binary}
           | {:error, :invalid_encryption_key}
@@ -72,6 +124,9 @@ defmodule Cryppo do
     apply(mod, :run_decryption, [encrypted_data, encryption_key_or_raw_key])
   end
 
+  @doc """
+    Encrypt data with a derived key
+  """
   @spec encrypt_with_derived_key(binary, encryption_strategy(), encryption_strategy(), String.t()) ::
           EncryptedDataWithDerivedKey.t()
           | {:unsupported_encryption_strategy, encryption_strategy}
@@ -99,6 +154,9 @@ defmodule Cryppo do
     end
   end
 
+  @doc """
+    Decrypt data with a derived key
+  """
   @spec decrypt_with_derived_key(EncryptedDataWithDerivedKey.t(), String.t()) ::
           {:ok, binary, DerivedKey.t()}
           | :decryption_error
@@ -133,12 +191,18 @@ defmodule Cryppo do
     end
   end
 
+  @doc """
+    Serialize various Cryppo data structures as a string
+  """
   @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t()) ::
           binary
   def serialize(%EncryptedData{} = s), do: Serialization.serialize(s)
   def serialize(%EncryptedDataWithDerivedKey{} = s), do: Serialization.serialize(s)
   def serialize(%RsaSignature{} = s), do: Serialization.serialize(s)
 
+  @doc """
+    Load various Cryppo data structures out of serialized formats
+  """
   @spec load(binary) ::
           EncryptedDataWithDerivedKey.t()
           | EncryptedData.t()
