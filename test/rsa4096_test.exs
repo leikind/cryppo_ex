@@ -3,6 +3,8 @@ defmodule Rsa4096Test do
 
   alias Cryppo.Rsa4096
 
+  doctest Rsa4096
+
   test "to_pem and back from_pem" do
     key = Cryppo.generate_encryption_key("Rsa4096")
 

@@ -1,9 +1,18 @@
 defmodule Cryppo.EncryptedDataWithDerivedKey do
   @moduledoc """
-  A struct to hold a derived key struct and an encrypted data struct
+  A struct for a derived key and data encrypted with this derived key
   """
 
-  alias Cryppo.{DerivedKey, EncryptedData, Serialization}
+  alias Cryppo.{DerivedKey, EncryptedData, EncryptedDataWithDerivedKey, Serialization}
+
+  @typedoc """
+  Struct `Cryppo.EncryptedData`
+
+  A `Cryppo.EncryptedData` struct contains
+
+  * `encrypted_data`: a `Cryppo.EncryptedData` struct
+  * `derived_key`: a `Cryppo.DerivedKey` struct
+  """
 
   @type t :: %__MODULE__{
           encrypted_data: EncryptedData.t(),
@@ -12,22 +21,16 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
 
   @enforce_keys [:encrypted_data, :derived_key]
   defstruct [:encrypted_data, :derived_key]
-end
 
-defimpl Cryppo.Serialization, for: Cryppo.EncryptedDataWithDerivedKey do
-  alias Cryppo.{
-    DerivedKey,
-    EncryptedData,
-    EncryptedDataWithDerivedKey,
-    Serialization
-  }
-
-  @spec serialize(EncryptedDataWithDerivedKey.t()) :: binary
-  def serialize(%EncryptedDataWithDerivedKey{
-        derived_key: %DerivedKey{} = derived_key,
-        encrypted_data: %EncryptedData{} = encrypted_data
-      }) do
-    [Serialization.serialize(encrypted_data), Serialization.serialize(derived_key)]
-    |> Enum.join(".")
+  defimpl Serialization do
+    @spec serialize(EncryptedDataWithDerivedKey.t()) :: binary
+    def serialize(%EncryptedDataWithDerivedKey{
+          derived_key: %DerivedKey{} = derived_key,
+          encrypted_data: %EncryptedData{} = encrypted_data
+        }) do
+      [encrypted_data, derived_key]
+      |> Enum.map(&Serialization.serialize(&1))
+      |> Enum.join(".")
+    end
   end
 end

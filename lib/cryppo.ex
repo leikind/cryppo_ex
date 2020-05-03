@@ -1,6 +1,6 @@
 defmodule Cryppo do
   @moduledoc """
-    Main public API of Cryppo.
+    Main public API of Cryppo
   """
 
   alias Cryppo.{

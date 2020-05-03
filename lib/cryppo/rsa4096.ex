@@ -1,15 +1,37 @@
 defmodule Cryppo.Rsa4096 do
   @moduledoc """
-    Encryption Strategy RSA 4096.
-    Key length 4096
-    Exponents: 65537
-    Padding: rsa_pkcs1_oaep_padding
+  Encryption strategy RSA with 4096-bit keys and some RSA-specific functions
+
+  For encryption, decryption, signing, and verification please use functions in module `Cryppo`.
+  This module has been included into documentation because of a few RSA-specific helper functions which go
+  beyond the behavior of an Encryption Strategy.
   """
 
+  # Key length 4096
+  # Exponents: 65537
+  # Padding: rsa_pkcs1_oaep_padding
+
+  @typedoc """
+  Erlang type for RSA private keys
+
+  The native Erlang type for RSA private keys in module [`public_key`](https://erlang.org/doc/man/public_key.html)
+  are Erlang records visible from Elixir as tuples with 11 terms the first term being atom `:RSAPrivateKey`
+  """
   @type rsa_private_key() ::
           {:RSAPrivateKey, integer, integer, integer, integer, integer, integer, integer, integer,
            integer, any}
+
+  @typedoc """
+  Erlang type for RSA public keys
+
+  The native Erlang type for RSA public keys in module [`public_key`](https://erlang.org/doc/man/public_key.html)
+  are Erlang records visible from Elixir as tuples with 3 terms the first term being atom `:RSAPublicKey`
+  """
   @type rsa_public_key() :: {:RSAPublicKey, integer, integer}
+
+  @typedoc """
+  RSA keys in PEM format
+  """
   @type pem() :: String.t()
 
   use Cryppo.EncryptionStrategy, strategy_name: "Rsa4096"
@@ -45,6 +67,31 @@ defmodule Cryppo.Rsa4096 do
 
   def encrypt(_, _), do: :encryption_error
 
+  @doc """
+
+  Extracts a public key from a `Cryppo.EncryptionKey` struct with an RSA private key or from an
+  RSA private key in the native Erlang type `t:rsa_private_key/0`
+
+  ## Examples
+
+  With a `Cryppo.EncryptionKey` struct:
+
+      iex> public_key = "Rsa4096"
+      ...> |> Cryppo.generate_encryption_key()
+      ...> |> Cryppo.Rsa4096.private_key_to_public_key()
+      ...> elem(public_key, 0)
+      :RSAPublicKey
+
+  With a native Erlang key:
+
+      iex> public_key = {:rsa, 4_096, 65_537}
+      ...> |> :public_key.generate_key()
+      ...> |> Cryppo.Rsa4096.private_key_to_public_key()
+      ...> elem(public_key, 0)
+      :RSAPublicKey
+
+  """
+
   @spec private_key_to_public_key(rsa_private_key() | EncryptionKey.t()) :: rsa_public_key()
   def private_key_to_public_key(%EncryptionKey{
         encryption_strategy_module: __MODULE__,
@@ -60,6 +107,37 @@ defmodule Cryppo.Rsa4096 do
     {:RSAPublicKey, public_modulus, public_exponent}
   end
 
+  @doc """
+  Converts an RSA key to PEM format.
+
+  Can convert
+
+  * a `Cryppo.EncryptionKey` struct
+  * a public key as native Erlang type `t:rsa_public_key/0`
+  * a private key as native Erlang type `t:rsa_private_key/0`
+
+
+  ## Examples
+
+  With a `Cryppo.EncryptionKey` struct
+
+      iex> "Rsa4096" |> Cryppo.generate_encryption_key() |> Cryppo.Rsa4096.to_pem()
+
+
+  With a public key as native Erlang type `t:rsa_public_key/0`
+
+      iex> "Rsa4096"
+      ...> |> Cryppo.generate_encryption_key()
+      ...> |> Cryppo.Rsa4096.private_key_to_public_key()
+      ...> |> Cryppo.Rsa4096.to_pem()
+
+  With a private key as native Erlang type `t:rsa_private_key/0`
+
+      iex> encryption_key = Cryppo.generate_encryption_key("Rsa4096")
+      iex> Cryppo.Rsa4096.to_pem(encryption_key.key)
+
+  """
+
   @spec to_pem(EncryptionKey.t() | rsa_private_key() | rsa_public_key()) :: {:ok, pem()}
   def to_pem(%EncryptionKey{key: key}),
     do: to_pem(key)
@@ -69,6 +147,29 @@ defmodule Cryppo.Rsa4096 do
     pem_entry = key |> elem(0) |> :public_key.pem_entry_encode(key)
     {:ok, :public_key.pem_encode([pem_entry])}
   end
+
+  @doc """
+  Loads and initializes a `Cryppo.EncryptionKey` struct from a string with a PEM.
+
+  ## Examples
+
+      iex> pem = "-----BEGIN RSA PRIVATE KEY-----\\n" <>
+      ...>       "MIICWwIBAAKBgQDKCUh7F4p5btzcSLBaToHvD3rCZX4fMaDtjkN5TwmC3/6iQzD5\\n" <>
+      ...>       "tn396BzDTdQ16HuuZ+eN+KQSa1QWr2h1DB13nVP+moeyLVC8BShiM3NBRn77r7Lr\\n" <>
+      ...>       "sWooM3mwnSvMPWWnBj1c+0tbO7zfur5wQdzBl66HrHgHt+Bz6f+dDj+aVwIDAQAB\\n" <>
+      ...>       "AoGAMHh3rihgrW9+h07dGF1baOoyzm6hCoTSkguefn0K0B5DLdSm7FHu+jp0pBqI\\n" <>
+      ...>       "/gHvolEFSZdMbarYOrUMf4BPlRSarCjjxf/beV4Pj/UQrCkDmNBBVJp33Sy8HEdb\\n" <>
+      ...>       "Wrzk+k8NcAS1UR4R6EW9JrUz0mMwX6CsvG2zZMbpS/Q9KXkCQQDwmCXjOTPQ+bxW\\n" <>
+      ...>       "K4gndHnXD5QkKNcTdFq64ef23R6AY0XEGkiRLDXZZA09hDIACgSSfk1Qbo0SJSvU\\n" <>
+      ...>       "TAR8A6clAkEA1vkWJ5qUo+xuIZB+2604LRco1GYAj5/fZ2kvUMjbOdCFgFaDVzJY\\n" <>
+      ...>       "X2pzLkk7RZNgPvXcRAgX7FlWmm4jwZzQywJARrHeSCMRx7DqF0PZUQaXmorYU7uw\\n" <>
+      ...>       "XuYMluc0WsRkZwNEh7fVZNrhw8vzXAUREBPhfg4gt6aUSyWi+FGR68LDBQJAC55O\\n" <>
+      ...>       "ujk6i1l94kaC9LB59sXnqQMSSLDlTBt9OSqB3rAMZxFF6/KGoDGKpBfFIk+CxiRX\\n" <>
+      ...>       "kT22vUleyt3lBNPK3QJAEr56asvREcIDFkbs7Ebjev4U1PL58w78ipp49Ti5FiwH\\n" <>
+      ...>       "vR9vuGcUcIDcWKOl05t4D35F5A/DskP6dGYA1cuWNg==\\n" <>
+      ...>       "-----END RSA PRIVATE KEY-----\\n\\n"
+      ...> {:ok, encryption_key} = Cryppo.Rsa4096.from_pem(pem)
+  """
 
   @spec from_pem(pem) :: {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
   def from_pem(pem) when is_binary(pem) do
@@ -98,6 +199,7 @@ defmodule Cryppo.Rsa4096 do
 
   def decrypt(_, _), do: :decryption_error
 
+  @doc false
   @spec sign(binary, rsa_private_key() | EncryptionKey.t() | pem()) ::
           RsaSignature.t() | {:error, :invalid_encryption_key}
   def sign(data, maybe_pem) when is_binary(data) and is_binary(maybe_pem) do
@@ -117,6 +219,7 @@ defmodule Cryppo.Rsa4096 do
     %RsaSignature{signature: signature, data: data}
   end
 
+  @doc false
   @spec verify(RsaSignature.t(), rsa_public_key | rsa_private_key | EncryptionKey.t() | pem) ::
           boolean() | {:error, :invalid_encryption_key}
   def verify(%RsaSignature{data: data, signature: signature}, public_key),

@@ -12,7 +12,10 @@ defmodule Cryppo.MixProject do
       package: package(),
       homepage_url: "https://github.com/leikind/cryppo_ex",
       source_url: "https://github.com/leikind/cryppo_ex",
-      docs: [extras: ["README.md"]]
+      docs: [
+        main: "Cryppo",
+        extras: ["README.md"]
+      ]
     ]
   end
 
@@ -27,6 +30,7 @@ defmodule Cryppo.MixProject do
       {:pbkdf2, "~> 2.0"},
       {:yamerl, "~> 0.8"},
       {:credo, "~> 1.1.0", only: :dev},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end

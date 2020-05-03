@@ -1,12 +1,12 @@
 defmodule Cryppo.Pbkdf2hmac do
-  @moduledoc """
-    PBKDF2 key derivation
-    https://en.wikipedia.org/wiki/PBKDF2
+  @moduledoc false
 
-    hash function: SHA256
-    Key length: 32 bytes
-    Minimal number of iterations: 20000
-  """
+  # PBKDF2 key derivation
+  # https://en.wikipedia.org/wiki/PBKDF2
+
+  # hash function: SHA256
+  # Key length: 32 bytes
+  # Minimal number of iterations: 20000
 
   use Cryppo.DerivationStrategy, strategy_name: "Pbkdf2Hmac"
 

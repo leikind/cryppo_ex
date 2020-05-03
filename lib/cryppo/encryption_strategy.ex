@@ -1,8 +1,7 @@
 defmodule Cryppo.EncryptionStrategy do
-  @moduledoc """
-  EncryptionStrategy behavior and macros to inject functions
-  common to all EncryptionStrategy modules
-  """
+  @moduledoc false
+
+  # EncryptionStrategy behavior and macros to inject functions common to all EncryptionStrategy modules
 
   alias Cryppo.{EncryptedData, EncryptionKey}
 
@@ -37,6 +36,7 @@ defmodule Cryppo.EncryptionStrategy do
 
   defp inject_run_encryption do
     quote do
+      @doc false
       def run_encryption(data, %EncryptionKey{encryption_strategy_module: __MODULE__} = key) do
         case encrypt(data, key) do
           {:ok, encrypted, artefacts} -> EncryptedData.new(__MODULE__, encrypted, artefacts)
@@ -58,6 +58,7 @@ defmodule Cryppo.EncryptionStrategy do
 
   defp inject_run_decryption do
     quote do
+      @doc false
       def run_decryption(
             %EncryptedData{encryption_strategy_module: __MODULE__} = encrypted_data,
             %EncryptionKey{encryption_strategy_module: __MODULE__} = encryption_key

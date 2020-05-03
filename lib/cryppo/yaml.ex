@@ -1,8 +1,8 @@
 defmodule Cryppo.Yaml do
-  @moduledoc """
-    * Poor man's to_yaml good enough for our purposes
-    * Wrapper around a fork of yamerl to decode YAML
-  """
+  @moduledoc false
+
+  # * Poor man's to_yaml good enough for our purposes
+  # * Wrapper around a fork of yamerl to decode YAML
 
   @spec decode(binary) :: {:ok, map | :invalid_yaml}
   def decode(yaml) when is_binary(yaml) do

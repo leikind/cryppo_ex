@@ -1,7 +1,7 @@
 defprotocol Cryppo.Serialization do
-  @moduledoc """
-  Cryppo serialization protocol
-  """
+  @moduledoc false
+
+  # Cryppo serialization protocol
 
   @spec serialize(t) :: String.t()
   def serialize(value)

@@ -1,11 +1,12 @@
 defmodule Cryppo.Aes256gcm do
-  @moduledoc """
-    Encryption Strategy AES 256 GCM (Galois/Counter Mode).
-    Key length: 32 bytes.
-    IV length: 12 bytes.
-    Auth tag length: 16 bytes.
-    AAD: "none"
-  """
+  @moduledoc false
+
+  # Encryption Strategy AES 256 GCM (Galois/Counter Mode).
+
+  # Key length: 32 bytes.
+  # IV length: 12 bytes.
+  # Auth tag length: 16 bytes.
+  # AAD: "none"
 
   use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
 

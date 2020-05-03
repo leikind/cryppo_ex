@@ -1,8 +1,7 @@
 defmodule Cryppo.DerivationStrategy do
-  @moduledoc """
-  DerivationStrategy behavior and macros to inject functions
-  common to all DerivationStrategy modules
-  """
+  @moduledoc false
+
+  # DerivationStrategy behavior and macros to inject functions common to all DerivationStrategy modules
 
   alias Cryppo.DerivedKey
 
