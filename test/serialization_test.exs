@@ -1,7 +1,7 @@
 defmodule SerializationTest do
   use ExUnit.Case
 
-  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey}
+  alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, Rsa4096}
 
   @plain_data "Hello world!"
 
@@ -179,7 +179,7 @@ defmodule SerializationTest do
       restored_rsa_signature = Cryppo.load(serialized)
       assert restored_rsa_signature == rsa_signature
 
-      public_key = Cryppo.private_key_to_public_key(private_key)
+      public_key = Rsa4096.private_key_to_public_key(private_key)
       assert Cryppo.verify_rsa_signature(restored_rsa_signature, public_key) == true
     end
   end

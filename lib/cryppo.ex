@@ -149,10 +149,6 @@ defmodule Cryppo do
   def verify_rsa_signature(rsa_signature, public_key),
     do: Rsa4096.verify(rsa_signature, public_key)
 
-  @spec private_key_to_public_key(Rsa4096.rsa_private_key() | EncryptionKey.t()) ::
-          Rsa4096.rsa_public_key()
-  def private_key_to_public_key(rsa_key), do: Rsa4096.private_key_to_public_key(rsa_key)
-
   @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t()) ::
           binary
   def serialize(%EncryptedData{} = s), do: Serialization.serialize(s)

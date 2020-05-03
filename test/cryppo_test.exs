@@ -247,7 +247,7 @@ defmodule CryppoTest do
       assert rsa_signature.data == @plain_data
       assert is_binary(rsa_signature.signature)
 
-      public_key = Cryppo.private_key_to_public_key(private_key)
+      public_key = Rsa4096.private_key_to_public_key(private_key)
 
       assert Cryppo.verify_rsa_signature(rsa_signature, public_key) == true
     end
@@ -263,7 +263,7 @@ defmodule CryppoTest do
       assert rsa_signature.data == @plain_data
       assert is_binary(rsa_signature.signature)
 
-      public_key = Cryppo.private_key_to_public_key(private_key)
+      public_key = Rsa4096.private_key_to_public_key(private_key)
 
       assert Cryppo.verify_rsa_signature(rsa_signature, public_key) == true
     end
@@ -279,7 +279,7 @@ defmodule CryppoTest do
       assert rsa_signature.data == @plain_data
       assert is_binary(rsa_signature.signature)
 
-      public_key = Cryppo.private_key_to_public_key(private_key)
+      public_key = Rsa4096.private_key_to_public_key(private_key)
 
       assert Cryppo.verify_rsa_signature(rsa_signature, public_key) == true
     end
@@ -315,7 +315,7 @@ defmodule CryppoTest do
     test "sign data with a private key and then verify with the public key as a PEM" do
       private_key = Cryppo.generate_encryption_key("Rsa4096")
 
-      {:ok, pem} = private_key |> Cryppo.private_key_to_public_key() |> Rsa4096.to_pem()
+      {:ok, pem} = private_key |> Rsa4096.private_key_to_public_key() |> Rsa4096.to_pem()
 
       rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
 
@@ -330,7 +330,7 @@ defmodule CryppoTest do
       wrong_public_key =
         "Rsa4096"
         |> Cryppo.generate_encryption_key()
-        |> Cryppo.private_key_to_public_key()
+        |> Rsa4096.private_key_to_public_key()
 
       assert Cryppo.verify_rsa_signature(rsa_signature, wrong_public_key) == false
     end
@@ -340,7 +340,7 @@ defmodule CryppoTest do
 
       rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
 
-      public_key = Cryppo.private_key_to_public_key(private_key)
+      public_key = Rsa4096.private_key_to_public_key(private_key)
 
       rsa_signature_with_wrong_data = %{rsa_signature | data: "something else"}
 
@@ -352,7 +352,7 @@ defmodule CryppoTest do
 
       rsa_signature = Cryppo.sign_with_private_key(@plain_data, private_key)
 
-      public_key = Cryppo.private_key_to_public_key(private_key)
+      public_key = Rsa4096.private_key_to_public_key(private_key)
 
       rsa_signature_with_wrong_signature = %{rsa_signature | signature: "notasignature"}
 
