@@ -13,7 +13,7 @@ defmodule Cryppo.MixProject do
       homepage_url: "https://github.com/leikind/cryppo_ex",
       source_url: "https://github.com/leikind/cryppo_ex",
       docs: [
-        main: "Cryppo",
+        main: "readme",
         extras: ["README.md"]
       ]
     ]

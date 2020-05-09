@@ -34,7 +34,7 @@ defmodule Cryppo do
   @spec encryption_strategies :: [encryption_strategy()]
   def encryption_strategies, do: Strategies.encryption_strategies()
 
-  @doc "List available derivation strategies"
+  @doc "List available  derivation strategies"
   @spec derivation_strategies :: [encryption_strategy()]
   def derivation_strategies, do: Strategies.derivation_strategies()
 
@@ -125,7 +125,12 @@ defmodule Cryppo do
   end
 
   @doc """
-    Encrypt data with a derived key
+  Encrypt data with a derived key
+
+  ## Example
+
+      iex> _encrypted = Cryppo.encrypt_with_derived_key("data to encrypt", "Aes256Gcm", "Pbkdf2Hmac", "passphrase")
+
   """
   @spec encrypt_with_derived_key(binary, encryption_strategy(), encryption_strategy(), String.t()) ::
           EncryptedDataWithDerivedKey.t()
@@ -155,7 +160,14 @@ defmodule Cryppo do
   end
 
   @doc """
-    Decrypt data with a derived key
+  Decrypt data with a derived key
+
+  ## Example
+
+      iex> encrypted = Cryppo.encrypt_with_derived_key("data to encrypt", "Aes256Gcm", "Pbkdf2Hmac", "passphrase")
+      iex> {:ok, decrypted, _key} = Cryppo.decrypt_with_derived_key(encrypted, "passphrase")
+      iex> decrypted
+      "data to encrypt"
   """
   @spec decrypt_with_derived_key(EncryptedDataWithDerivedKey.t(), String.t()) ::
           {:ok, binary, DerivedKey.t()}
@@ -192,7 +204,33 @@ defmodule Cryppo do
   end
 
   @doc """
-    Serialize various Cryppo data structures as a string
+  Serialize various Cryppo data structures as a string
+
+  3 Cryppo data structures have their own serialization formats:
+
+  * `Cryppo.EncryptedData`
+  * `Cryppo.EncryptedDataWithDerivedKey`
+  * `Cryppo.RsaSignature`
+
+  ## Examples
+
+  `Cryppo.EncryptedData`:
+
+      iex> {encrypted_data, _key} = Cryppo.encrypt("data to encrypt", "Aes256Gcm")
+      iex> Cryppo.serialize(encrypted_data)
+
+  `Cryppo.EncryptedDataWithDerivedKey`:
+
+      iex> "data to encrypt"
+      ...> |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "passphrase")
+      ...> |> Cryppo.serialize()
+
+  `Cryppo.RsaSignature`:
+
+      iex> private_key = Cryppo.generate_encryption_key("Rsa4096")
+      iex> "data to encrypt"
+      ...> |> Cryppo.Rsa4096.sign(private_key)
+      ...> |> Cryppo.serialize()
   """
   @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t()) ::
           binary
@@ -201,7 +239,24 @@ defmodule Cryppo do
   def serialize(%RsaSignature{} = s), do: Serialization.serialize(s)
 
   @doc """
-    Load various Cryppo data structures out of serialized formats
+  Load various Cryppo data structures from theur serialized forms
+
+  3 Cryppo data structures have their own serialization formats:
+
+  * `Cryppo.EncryptedData`
+  * `Cryppo.EncryptedDataWithDerivedKey`
+  * `Cryppo.RsaSignature`
+
+  ## Examples
+
+      iex> s = "Aes256Gcm.vDY5WSQjdYkBIAcbIfTgk4e-TXHp.LS0tCmFkOiBub25lCmF0OiAhIWJpbmFyeSB8LQogIGkyTWliWVlvdTh6b2FvM3ZOR0FiV1E9PQppdjogISFiaW5hcnkgfC0KICBUT0o4TUwyN1pId01tVmVwCg=="
+      iex> %Cryppo.EncryptedData{} = Cryppo.load(s)
+
+      iex> s = "Aes256Gcm.fkPSVHHuUeRbRMGzLqno_7qh74OGfdl5dg==.LS0tCmFkOiBub25lCmF0OiAhIWJpbmFyeSB8LQogIEZSME5UNUx2Zmpsd3lEY3NKUm9VcEE9PQppdjogISFiaW5hcnkgfC0KICBtRWdzdDMvdjg0Q0V2aEZHCg==.Pbkdf2Hmac.LS0tCidpJzogMjE5MjgKJ2l2JzogISFiaW5hcnkgfC0KICBEZVNHRTlBVS9BVG1QM3JaeEYzUGt5V1ZHSU09CidsJzogMzIK"
+      iex> %Cryppo.EncryptedDataWithDerivedKey{} = Cryppo.load(s)
+
+      iex> s = "Sign.Rsa4096.V4JbRzpkud-3cHCGqDwGjS3TmRto5Te0iSAtD7oIzsDa83McBDYpU_eeswVZF9AGEvoAEQOCwpqJ_PgbjHKT2nHgLysK-btG6Nxk_K2J7A6Uq15X5QrOgIKTzC00dj1tzAN73u9lsRPKIfwPyp_Mlb6FNs1LoB7OvAusit6QPm8iAwHo4nOWBBUf3hO9b3gsWJ92FxnBsCLYFQj_zv4mnLHj7pDNVtq9Kp4hK6bgcIH4FZtyDKDr6bXEtlCGLDIY10UqNLylkagI36Gyafm-HnD57vRxjgHIGEsd2XcwDJ8PqqrzSYNxl-RyWD3wq0nXE_1rYJ7k1AKLM5G1Hg8B2whqcXpQ52x3zVFCAjlU9GNhT6pdUBxQYw09va7fe2w517PrwwMe90MW87fj3G7dGEKT95cDLTx1d84ybIUFUJOGKY0FF4LL0E3UqWQ92kU4bh-DSTkNmgItX34fiBIOpQDbF238IkRYyFA8LfMPfL-0_dnto9sH0E3Umi41qFvpA2Nq8r57FF4vCOSkXYWVfyitOkY_URqMLxS57azwZRBehJYDtvbqmzaYEDceeLjkxDi--Y10LT4Cz2SGiU--YDJM66PZ3Cp74gvDpsWlohcwYmMib5LrjdtvLOAtOZhoLZyGeeX0lDnwOum7lFRpJd8UIrOlTvpBo48ep2bpmgA=.VmVyaMO8dHVuZyB2ZXJib3Rlbg=="
+      iex> %Cryppo.RsaSignature{} = Cryppo.load(s)
   """
   @spec load(binary) ::
           EncryptedDataWithDerivedKey.t()
