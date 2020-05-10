@@ -78,6 +78,10 @@ defmodule Cryppo do
   def encrypt(data, encryption_strategy, encryption_key_or_raw_key)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do
+      encryption_key_or_raw_key =
+        encryption_key_or_raw_key
+        |> add_encryption_strategy_module(mod)
+
       apply(mod, :run_encryption, [data, encryption_key_or_raw_key])
     end
   end
@@ -102,6 +106,16 @@ defmodule Cryppo do
     end
   end
 
+  defp add_encryption_strategy_module(key, mod) do
+    case key do
+      %EncryptionKey{encryption_strategy_module: nil} = key ->
+        %{key | encryption_strategy_module: mod}
+
+      k ->
+        k
+    end
+  end
+
   @doc """
   Decrypt encrypted data with an encryption key
 
@@ -121,6 +135,10 @@ defmodule Cryppo do
         %EncryptedData{encryption_strategy_module: mod} = encrypted_data,
         encryption_key_or_raw_key
       ) do
+    encryption_key_or_raw_key =
+      encryption_key_or_raw_key
+      |> add_encryption_strategy_module(mod)
+
     apply(mod, :run_decryption, [encrypted_data, encryption_key_or_raw_key])
   end
 

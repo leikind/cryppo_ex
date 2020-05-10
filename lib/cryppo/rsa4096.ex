@@ -60,8 +60,13 @@ defmodule Cryppo.Rsa4096 do
       when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey and
              tuple_size(private_key) == 11 do
     public_key = private_key_to_public_key(private_key)
-    encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
+    encrypt(data, EncryptionKey.new(public_key, __MODULE__))
+  end
 
+  def encrypt(data, %EncryptionKey{key: public_key})
+      when is_binary(data) and elem(public_key, 0) == :RSAPublicKey and
+             tuple_size(public_key) == 3 do
+    encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
     {:ok, encrypted, []}
   end
 
@@ -190,7 +195,8 @@ defmodule Cryppo.Rsa4096 do
   @spec decrypt(EncryptedData.t(), EncryptionKey.t()) :: {:ok, binary} | :decryption_error
   @impl EncryptionStrategy
   def decrypt(%EncryptedData{encrypted_data: encrypted_data}, %EncryptionKey{key: private_key})
-      when is_binary(encrypted_data) do
+      when is_binary(encrypted_data) and elem(private_key, 0) == :RSAPrivateKey and
+             tuple_size(private_key) == 11 do
     decrypted = :public_key.decrypt_private(encrypted_data, private_key, rsa_padding: @padding)
     {:ok, decrypted}
   rescue

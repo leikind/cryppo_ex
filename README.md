@@ -53,7 +53,7 @@ The serialized payload can later be loaded by using `Cryppo.load/1` and decrypte
 IO.inspect(decrypted) #=> "some data to encrypt"
 ```
 
-### Encrypt and decrypt data using a generated cryptographic key
+## Encrypt and decrypt data using a generated cryptographic key
 
 You can also encrypt using your own generated key using functions
 the `Cryppo.generate_encryption_key/1` and `Cryppo.encrypt/3`:
@@ -91,7 +91,7 @@ The serialized payload can later be loaded by using `Cryppo.load/1` and decrypte
 Cryppo.inspect(decrypted) #=> "some data to encrypt"
 ```
 
-### Signing and verification
+## Signing and verification
 
 For authentication purposes, a sender can sign a message with their private key,
 and a recipient can verify this signature using the sender's public key.
@@ -126,7 +126,134 @@ The amount of computational effort required to complete the operation can be twe
 This ensures that brute force attacks on the password encrypted data.
 
 
+## Command Line Interface
+
+CryppoEx exposes its functionality via a command line interface.
+
+In order to use the CryppoEx CLI, you need to build an
+[escript](https://hexdocs.pm/mix/master/Mix.Tasks.Escript.Build.html) executable with the following command:
+
+```sh
+MIX_ENV=prod mix escript.build
+```
+
+The generated executable can run on any machine that has Erlang installed and does not require Elixir to be installed.
+
+
+### `cryppo genkey`
+
+Generate a new (random) encryption key - printed as base64 encoded
+
+```
+USAGE
+  $ cryppo genkey -s [ENCRYPTION_STRATEGY]
+
+OPTIONS
+  -s, --strategy=strategy  encryption strategy (defaults to Aes256Gcm)
+
+EXAMPLES
+  cryppo genkey
+  cryppo genkey --strategy=Aes256Gcm
+```
+
+### `cryppo genkeypair`
+
+Generate a new RSA key pair, writing the private and public keys to files.
+
+```
+USAGE
+  $ cryppo genkeypair -p [PRIVATE_KEY_FILE] -P [PUBLIC_KEY_FILE]
+
+OPTIONS
+  -p, --privateKeyOut=privateKeyOut  (required) Private key output path
+  -P, --publicKeyOut=publicKeyOut    (required) Public key output path
+
+EXAMPLE
+  cryppo genkeypair -p private.pem -P public.pem
+```
+
+### `cryppo encrypt`
+
+Encrypt a serialized encrypted value
+
+```
+USAGE
+$ cryppo encrypt -v [DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
+$ cryppo encrypt -v [DATA] -P [PUBLIC_KEY_FILE]
+
+OPTIONS
+  -v, --value=value                  (required) value to encrypt
+  -s, --strategy=strategy            encryption strategy (defaults to Aes256Gcm)
+  -k, --key=key                      base64 encoded data encryption key
+  -P, --publicKeyFile=publicKeyFile  public key file (if encrypting with RSA)
+
+EXAMPLES
+  encrypt -v "hello world" -k vm8CjugMda2zdjsI9W25nH-CY-84DDYoBxTFLwfKLDk= -s Aes256Gcm
+  encrypt -v "hello world" -P public.pem
+```
+
+### `cryppo decrypt`
+
+Decrypt a serialized encrypted value
+
+```
+USAGE
+  $ cryppo decrypt -s [ENCRYPTED_DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
+  $ cryppo decrypt -s [ENCRYPTED_DATA] -p [PRIVATE_KEY_FILE]
+
+OPTIONS
+  -s, --strategy=strategy              encryption strategy (defaults to Aes256Gcm)
+  -k, --key=key                        base64 encoded data encryption key
+  -p, --privateKeyFile=privateKeyFile  private key file (if encrypting with RSA)
+  -e, --encrypted=encrypted            (required) serialized encrypted value
+
+EXAMPLES
+  cryppo decrypt -e
+  "Aes256Gcm.gSAByGMq4edzM0U=.LS0tCml2OiAhYmluYXJ5IHwtCiAgaW1QL09qMWZ6eWw0cmwwSgphdDogIWJpbmFyeSB8LQogIE5SbjZUQXJ2bitNS1
+  Z5M0FpZEpmWlE9PQphZDogbm9uZQo=" -k vm8CjugMda2zdjsI9W25nH-CY-84DDYoBxTFLwfKLDk=
+
+  cryppo decrypt -e "Rsa4096.bJjV2g_RBZKeyqBr-dSjPAc3qtkTgd0=.LS0tCnt9Cg==" -p private.pem
+```
+
+### `cryppo sign FILE DESTINATION`
+
+Sign a file with an RSA private key and write the signed contents to a new file
+
+```
+USAGE
+$ cryppo sign -p [PRIVATE_KEY_FILE] FILE DESTINATION
+
+ARGUMENTS
+  FILE         File to sign
+  DESTINATION  file to write the resulting signed content to
+
+OPTIONS
+  -p, --privateKeyFile=privateKeyFile  (required) path to the private key file
+
+EXAMPLE
+  cryppo sign -p private.pem my_file.txt my_file.signed.txt
+```
+
+### `cryppo verify FILE DESTINATION`
+
+Verify an RSA signed file and write the contents to another file.
+
+```
+USAGE
+$ cryppo verify -P [PUBLIC_KEY_FILE] FILE DESTINATION
+
+ARGUMENTS
+  FILE         Signed file contents to verify
+  DESTINATION  File to write the resulting verified content to
+
+OPTIONS
+  -P, --publicKeyFile=publicKeyFile  (required) path to the public key file
+
+EXAMPLE
+  cryppo verify -P public.pem my_file.signed.txt my_file.txt
+```
+
 ## TODO
 
-* Command line interface like in Cryppo.js
+* Command line interface for key derivation
 * New better serialization format for encryption/derivation artefacts
