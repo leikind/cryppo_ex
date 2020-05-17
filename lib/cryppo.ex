@@ -191,14 +191,9 @@ defmodule Cryppo do
           | {:incompatible_key, submitted_key_strategy: atom, encryption_strategy: atom}
   def decrypt_with_derived_key(
         %EncryptedDataWithDerivedKey{
-          derived_key:
-            %DerivedKey{
-              key_derivation_strategy: key_derivation_mod
-            } = derived_key,
+          derived_key: %DerivedKey{key_derivation_strategy: key_derivation_mod} = derived_key,
           encrypted_data:
-            %EncryptedData{
-              encryption_strategy_module: encryption_strategy_mod
-            } = encrypted_data
+            %EncryptedData{encryption_strategy_module: encryption_strategy_mod} = encrypted_data
         },
         passphrase
       )
@@ -288,7 +283,10 @@ defmodule Cryppo do
         RsaSignature.load(signature, data)
 
       [strategy_name, encrypted_data, encryption_artefacts] ->
-        EncryptedData.load(strategy_name, encrypted_data, encryption_artefacts)
+        with {:ok, encrypted_data} <-
+               EncryptedData.load(strategy_name, encrypted_data, encryption_artefacts) do
+          encrypted_data
+        end
 
       [
         strategy,
@@ -297,13 +295,15 @@ defmodule Cryppo do
         key_derivation_strategy,
         derivation_artefacts
       ] ->
-        EncryptedDataWithDerivedKey.load(
-          strategy,
-          encrypted_data,
-          encryption_artefacts,
-          key_derivation_strategy,
-          derivation_artefacts
-        )
+        with {:ok, encrypted_data_with_derived_key} <-
+               EncryptedDataWithDerivedKey.load(
+                 strategy,
+                 encrypted_data,
+                 encryption_artefacts,
+                 key_derivation_strategy,
+                 derivation_artefacts
+               ),
+             do: encrypted_data_with_derived_key
 
       _ ->
         {:error, :invalid_serialization_value}

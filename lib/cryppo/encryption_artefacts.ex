@@ -22,15 +22,16 @@ defmodule Cryppo.EncryptionArtefacts do
   defstruct [:initialization_vector, :authentication_tag, :additional_authenticated_data]
 
   @doc false
-  @spec load(binary) :: t() | {:error, :invalid_base64} | {:ok, :invalid_yaml | map}
+  @spec load(binary) :: {:ok, t()} | {:error, :invalid_base64 | :invalid_yaml}
   def load(s) when is_binary(s) do
     with {:ok, encryption_artefacts_base64} <- decode_base64(s),
          {:ok, %{} = artefacts_map} <- Yaml.decode(encryption_artefacts_base64) do
-      %__MODULE__{
-        initialization_vector: artefacts_map["iv"],
-        authentication_tag: artefacts_map["at"],
-        additional_authenticated_data: artefacts_map["ad"]
-      }
+      {:ok,
+       %__MODULE__{
+         initialization_vector: artefacts_map["iv"],
+         authentication_tag: artefacts_map["at"],
+         additional_authenticated_data: artefacts_map["ad"]
+       }}
     end
   end
 

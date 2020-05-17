@@ -27,7 +27,7 @@ defmodule Cryppo.DerivedKey do
   """
 
   @type t :: %__MODULE__{
-          encryption_key: EncryptionKey.t(),
+          encryption_key: EncryptionKey.t() | nil,
           key_derivation_strategy: Cryppo.encryption_strategy_module(),
           salt: binary,
           iter: integer,

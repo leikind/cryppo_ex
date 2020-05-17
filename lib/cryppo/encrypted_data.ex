@@ -24,7 +24,7 @@ defmodule Cryppo.EncryptedData do
   """
 
   @type t :: %__MODULE__{
-          encryption_strategy_module: Cryppo.encryption_strategy_module(),
+          encryption_strategy_module: Cryppo.encryption_strategy_module() | nil,
           encrypted_data: binary,
           encryption_artefacts: EncryptionArtefacts.t()
         }
@@ -48,7 +48,7 @@ defmodule Cryppo.EncryptedData do
 
   @doc false
   @spec load(binary, any, any) ::
-          t()
+          {:ok, t()}
           | {:error, :invalid_base64}
           | {:error, :invalid_yaml}
           | {:unsupported_encryption_strategy, binary}
@@ -56,9 +56,8 @@ defmodule Cryppo.EncryptedData do
     case find_strategy(strategy_name) do
       {:ok, encryption_strategy_mod} ->
         with {:ok, encrypted_data} <- decode_base64(encrypted_data_base64),
-             encryption_artefacts = %EncryptionArtefacts{} <-
-               EncryptionArtefacts.load(encryption_artefacts_base64) do
-          new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
+             {:ok, encryption_artefacts} <- EncryptionArtefacts.load(encryption_artefacts_base64) do
+          {:ok, new(encryption_strategy_mod, encrypted_data, encryption_artefacts)}
         end
 
       err ->

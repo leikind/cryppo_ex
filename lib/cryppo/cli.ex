@@ -3,7 +3,14 @@ defmodule Cryppo.Cli do
 
   use ExCLI.DSL, escript: true
 
-  alias Cryppo.{EncryptedData, EncryptionKey, EncryptionKey, Rsa4096, RsaSignature}
+  alias Cryppo.{
+    EncryptedData,
+    EncryptedDataWithDerivedKey,
+    EncryptionKey,
+    EncryptionKey,
+    Rsa4096,
+    RsaSignature
+  }
 
   name("cryppo")
   description("cryppo CLI")
@@ -21,6 +28,8 @@ defmodule Cryppo.Cli do
         "verify" -> verify_help()
         "encrypt" -> encrypt_help()
         "decrypt" -> decrypt_help()
+        "encrypt-der" -> encrypt_der_help()
+        "decrypt-der" -> decrypt_der_help()
         unknown_cmd -> IO.puts("Unknown command: #{unknown_cmd}")
       end
     end
@@ -44,7 +53,7 @@ defmodule Cryppo.Cli do
     Generate an encryption key for a symmetric encryption strategy - printed as base64 encoded
 
     USAGE
-      $ cryppo genkey -s [ENCRYPTION_STRATEGY]
+      cryppo genkey -s [ENCRYPTION_STRATEGY]
 
     OPTIONS
       -s, --strategy=strategy  encryption strategy (defaults to Aes256Gcm)
@@ -75,7 +84,7 @@ defmodule Cryppo.Cli do
     Generate a new RSA key pair, writing the private and public keys to files.
 
     USAGE
-      $ cryppo genkeypair -p [PRIVATE_KEY_FILE] -P [PUBLIC_KEY_FILE]
+      cryppo genkeypair -p [PRIVATE_KEY_FILE] -P [PUBLIC_KEY_FILE]
 
     OPTIONS
       -p, --privateKeyOut=privateKeyOut  (required) Private key output path
@@ -106,7 +115,7 @@ defmodule Cryppo.Cli do
   defp sign_help do
     IO.puts("""
     USAGE
-    $ cryppo sign -p [PRIVATE_KEY_FILE] FILE DESTINATION
+    cryppo sign -p [PRIVATE_KEY_FILE] FILE DESTINATION
 
     ARGUMENTS
       FILE         File to sign
@@ -140,7 +149,7 @@ defmodule Cryppo.Cli do
   defp verify_help do
     IO.puts("""
     USAGE
-    $ cryppo verify -P [PUBLIC_KEY_FILE] FILE DESTINATION
+    cryppo verify -P [PUBLIC_KEY_FILE] FILE DESTINATION
 
     ARGUMENTS
       FILE         Signed file contents to verify
@@ -200,8 +209,8 @@ defmodule Cryppo.Cli do
   defp encrypt_help do
     IO.puts("""
     USAGE
-    $ cryppo encrypt -v [DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
-    $ cryppo encrypt -v [DATA] -P [PUBLIC_KEY_FILE]
+    cryppo encrypt -v [DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
+    cryppo encrypt -v [DATA] -P [PUBLIC_KEY_FILE]
 
     OPTIONS
       -v, --value=value                  (required) value to encrypt
@@ -257,6 +266,115 @@ defmodule Cryppo.Cli do
     end
   end
 
+  defp decrypt_help do
+    IO.puts("""
+    USAGE
+      cryppo decrypt -s [ENCRYPTED_DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
+      cryppo decrypt -s [ENCRYPTED_DATA] -p [PRIVATE_KEY_FILE]
+
+    OPTIONS
+      -s, --strategy=strategy              encryption strategy (defaults to Aes256Gcm)
+      -k, --key=key                        base64 encoded data encryption key
+      -p, --privateKeyFile=privateKeyFile  private key file (if encrypting with RSA)
+      -e, --encrypted=encrypted            (required) serialized encrypted value
+
+    EXAMPLES
+      cryppo decrypt -e
+      "Aes256Gcm.gSAByGMq4edzM0U=.LS0tCml2OiAhYmluYXJ5IHwtCiAgaW1QL09qMWZ6eWw0cmwwSgphdDogIWJpbmFyeSB8LQogIE5SbjZUQXJ2bitNS1
+      Z5M0FpZEpmWlE9PQphZDogbm9uZQo=" -k vm8CjugMda2zdjsI9W25nH-CY-84DDYoBxTFLwfKLDk=
+
+      cryppo decrypt -e "Rsa4096.bJjV2g_RBZKeyqBr-dSjPAc3qtkTgd0=.LS0tCnt9Cg==" -p private.pem
+    """)
+  end
+
+  command :"encrypt-der" do
+    description("Encrypt data with a derived key")
+
+    option(:value, aliases: [:v])
+    option(:password, aliases: [:w])
+    option(:strategy, aliases: [:s])
+    option(:"derivation-strategy", aliases: [:d])
+
+    run context do
+      data = context[:value]
+      passphrase = context[:password]
+      strategy = context[:strategy]
+      derivation_strategy = context[:"derivation-strategy"]
+
+      cond do
+        data == nil ->
+          encrypt_der_help()
+
+        passphrase == nil ->
+          encrypt_der_help()
+
+        true ->
+          strategy = if strategy, do: strategy, else: "Aes256Gcm"
+
+          derivation_strategy =
+            if derivation_strategy, do: derivation_strategy, else: "Pbkdf2Hmac"
+
+          encrypt_with_derived_key(data, strategy, derivation_strategy, passphrase)
+      end
+    end
+  end
+
+  defp encrypt_der_help do
+    IO.puts("""
+    USAGE
+    cryppo encrypt-der -v [DATA] -w [PASSWORD] -s [ENCRYPTION_STRATEGY] -d [DERIVATION_STRATEGY]
+
+    OPTIONS
+      -v, --value=value                  (required) value to encrypt
+      -w, --password=password            (required) password for key derivation
+      -s, --strategy=strategy            encryption strategy (defaults to Aes256Gcm)
+      -d, --derivation-strategy=strategy derivation strategy (defaults to Pbkdf2Hmac)
+
+    EXAMPLES
+      cryppo encrypt-der -v "hello world" -w "secret phrase" -s Aes256Gcm -d Pbkdf2Hmac
+
+      cryppo encrypt-der -v "hello world" -w "secret phrase"
+    """)
+  end
+
+  command :"decrypt-der" do
+    description("Encrypt data with a derived key")
+
+    option(:encrypted, aliases: [:e])
+    option(:password, aliases: [:w])
+
+    run context do
+      data = context[:encrypted]
+      passphrase = context[:password]
+
+      cond do
+        data == nil ->
+          decrypt_der_help()
+
+        passphrase == nil ->
+          decrypt_der_help()
+
+        true ->
+          decrypt_with_derived_key(data, passphrase)
+      end
+    end
+  end
+
+  defp decrypt_der_help do
+    IO.puts("""
+    USAGE
+    cryppo decrypt-der -e [ENCRYPTED_DATA] -w [PASSWORD]
+
+    OPTIONS
+      -e, --encrypted=encrypted      (required) serialized encrypted value
+      -w, --password=password        (required) passphrase for key derivation
+
+    EXAMPLES
+      cryppo decrypt-der -w "secret phrase"  \\
+      -e "Aes256Gcm.e-IJT9E8ew3wlz8=.LS0tCmFkOiBub25lCmF0OiAhIWJpbmFyeSB8LQogIHpTRzQzbVhlSFBsR3ZQQVZoNTVJQUE9PQppdjogISFiaW5hcnkgfC0KICBMU2NDNmVCZ2wrUCtuUkpaCg==.Pbkdf2Hmac.LS0tCidpJzogMjEzMjIKJ2l2JzogISFiaW5hcnkgfC0KICBzTmlGT21xWEg5b1piNzRNVElCcGxvNHlHV2M9CidsJzogMzIK"
+    """)
+  end
+
   defp decrypt(data, private_key_file) do
     with {:ok, pem} <- File.read(private_key_file),
          {:ok, key} <- Rsa4096.from_pem(pem),
@@ -290,27 +408,6 @@ defmodule Cryppo.Cli do
       {:ok, key} -> decrypt(data, EncryptionKey.new(key), strategy)
       _ -> IO.puts(:stderr, "The key is invalid base64!")
     end
-  end
-
-  defp decrypt_help do
-    IO.puts("""
-    USAGE
-      $ cryppo decrypt -s [ENCRYPTED_DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
-      $ cryppo decrypt -s [ENCRYPTED_DATA] -p [PRIVATE_KEY_FILE]
-
-    OPTIONS
-      -s, --strategy=strategy              encryption strategy (defaults to Aes256Gcm)
-      -k, --key=key                        base64 encoded data encryption key
-      -p, --privateKeyFile=privateKeyFile  private key file (if encrypting with RSA)
-      -e, --encrypted=encrypted            (required) serialized encrypted value
-
-    EXAMPLES
-      cryppo decrypt -e
-      "Aes256Gcm.gSAByGMq4edzM0U=.LS0tCml2OiAhYmluYXJ5IHwtCiAgaW1QL09qMWZ6eWw0cmwwSgphdDogIWJpbmFyeSB8LQogIE5SbjZUQXJ2bitNS1
-      Z5M0FpZEpmWlE9PQphZDogbm9uZQo=" -k vm8CjugMda2zdjsI9W25nH-CY-84DDYoBxTFLwfKLDk=
-
-      cryppo decrypt -e "Rsa4096.bJjV2g_RBZKeyqBr-dSjPAc3qtkTgd0=.LS0tCnt9Cg==" -p private.pem
-    """)
   end
 
   defp genkey(strategy) do
@@ -432,6 +529,25 @@ defmodule Cryppo.Cli do
     with {:ok, pem} <- File.read(public_key_file),
          {:ok, key} <- Rsa4096.from_pem(pem) do
       encrypt(data, key, "Rsa4096")
+    else
+      err -> IO.puts(:stderr, inspect(err))
+    end
+  end
+
+  defp encrypt_with_derived_key(data, strategy, derivation_strategy, passphrase) do
+    case Cryppo.encrypt_with_derived_key(data, strategy, derivation_strategy, passphrase) do
+      encrypted = %EncryptedDataWithDerivedKey{} ->
+        encrypted |> Cryppo.serialize() |> IO.puts()
+
+      err ->
+        IO.puts(:stderr, inspect(err))
+    end
+  end
+
+  defp decrypt_with_derived_key(data, passphrase) do
+    with encrypted = %EncryptedDataWithDerivedKey{} <- Cryppo.load(data),
+         {:ok, decrypted, _key} <- Cryppo.decrypt_with_derived_key(encrypted, passphrase) do
+      IO.puts(decrypted)
     else
       err -> IO.puts(:stderr, inspect(err))
     end

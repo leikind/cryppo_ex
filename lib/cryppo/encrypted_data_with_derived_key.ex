@@ -32,11 +32,9 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
   defstruct [:encrypted_data, :derived_key]
 
   @doc false
-  @spec load(binary, binary, binary, binary, binary) ::
-          EncryptedDataWithDerivedKey.t()
-          | {:error, :invalid_base64}
-          | {:error, :invalid_yaml}
-          | {:error, :invalid_derivation_artefacts}
+  @spec load(any, any, any, binary, any) ::
+          {:ok, t()}
+          | {:error, :invalid_base64 | :invalid_derivation_artefacts | :invalid_yaml}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}
   def load(
@@ -51,7 +49,7 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
          {:ok, derivation_artefacts_yaml} <- decode_base64(derivation_artefacts_base64),
          {:ok, derivation_artefacts} <- Yaml.decode(derivation_artefacts_yaml),
          {:ok, salt, iterations, length} <- parse_derivation_artefacts(derivation_artefacts),
-         %EncryptedData{} = encrypted_data <-
+         {:ok, encrypted_data} <-
            EncryptedData.load(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
       hash = apply(key_derivation_mod, :hash_function, [])
 
@@ -64,12 +62,13 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
         hash: hash
       }
 
-      %__MODULE__{encrypted_data: encrypted_data, derived_key: derived_key}
+      key = %__MODULE__{encrypted_data: encrypted_data, derived_key: derived_key}
+      {:ok, key}
     end
   end
 
   @spec parse_derivation_artefacts(any) ::
-          {:error, :invalid_derivation_artefacts} | {:ok, binary, binary, binary}
+          {:error, :invalid_derivation_artefacts} | {:ok, binary, integer, integer}
   defp parse_derivation_artefacts(%{"iv" => iv, "i" => i, "l" => l}), do: {:ok, iv, i, l}
   defp parse_derivation_artefacts(_), do: {:error, :invalid_derivation_artefacts}
 

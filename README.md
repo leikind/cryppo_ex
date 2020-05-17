@@ -146,7 +146,7 @@ Generate a new (random) encryption key - printed as base64 encoded
 
 ```
 USAGE
-  $ cryppo genkey -s [ENCRYPTION_STRATEGY]
+  cryppo genkey -s [ENCRYPTION_STRATEGY]
 
 OPTIONS
   -s, --strategy=strategy  encryption strategy (defaults to Aes256Gcm)
@@ -162,7 +162,7 @@ Generate a new RSA key pair, writing the private and public keys to files.
 
 ```
 USAGE
-  $ cryppo genkeypair -p [PRIVATE_KEY_FILE] -P [PUBLIC_KEY_FILE]
+  cryppo genkeypair -p [PRIVATE_KEY_FILE] -P [PUBLIC_KEY_FILE]
 
 OPTIONS
   -p, --privateKeyOut=privateKeyOut  (required) Private key output path
@@ -174,12 +174,12 @@ EXAMPLE
 
 ### `cryppo encrypt`
 
-Encrypt a serialized encrypted value
+Encrypt data with a generated key
 
 ```
 USAGE
-$ cryppo encrypt -v [DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
-$ cryppo encrypt -v [DATA] -P [PUBLIC_KEY_FILE]
+  cryppo encrypt -v [DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
+  cryppo encrypt -v [DATA] -P [PUBLIC_KEY_FILE]
 
 OPTIONS
   -v, --value=value                  (required) value to encrypt
@@ -198,14 +198,14 @@ Decrypt a serialized encrypted value
 
 ```
 USAGE
-  $ cryppo decrypt -s [ENCRYPTED_DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
-  $ cryppo decrypt -s [ENCRYPTED_DATA] -p [PRIVATE_KEY_FILE]
+  cryppo decrypt -e [ENCRYPTED_DATA] -k [KEY] -s [ENCRYPTION_STRATEGY]
+  cryppo decrypt -e [ENCRYPTED_DATA] -p [PRIVATE_KEY_FILE]
 
 OPTIONS
+  -e, --encrypted=encrypted            (required) serialized encrypted value
   -s, --strategy=strategy              encryption strategy (defaults to Aes256Gcm)
   -k, --key=key                        base64 encoded data encryption key
   -p, --privateKeyFile=privateKeyFile  private key file (if encrypting with RSA)
-  -e, --encrypted=encrypted            (required) serialized encrypted value
 
 EXAMPLES
   cryppo decrypt -e
@@ -215,13 +215,50 @@ EXAMPLES
   cryppo decrypt -e "Rsa4096.bJjV2g_RBZKeyqBr-dSjPAc3qtkTgd0=.LS0tCnt9Cg==" -p private.pem
 ```
 
+### `cryppo encrypt-der`
+
+Encrypt data with a derived key
+
+```
+USAGE
+cryppo encrypt-der -v [DATA] -w [PASSWORD] -s [ENCRYPTION_STRATEGY] -d [DERIVATION_STRATEGY]
+
+OPTIONS
+  -v, --value=value                  (required) value to encrypt
+  -w, --password=password            (required) password for key derivation
+  -s, --strategy=strategy            encryption strategy (defaults to Aes256Gcm)
+  -d, --derivation-strategy=strategy derivation strategy (defaults to Pbkdf2Hmac)
+
+EXAMPLES
+  cryppo encrypt-der -v "hello world" -w "secret phrase" -s Aes256Gcm -d Pbkdf2Hmac
+
+  cryppo encrypt-der -v "hello world" -w "secret phrase"
+```
+
+### `cryppo decrypt-der`
+
+Decrypt a serialized encrypted value with a derived key
+
+```
+USAGE
+  cryppo decrypt-der -e [ENCRYPTED_DATA] -p [PASSPHRASE]
+
+OPTIONS
+  -e, --encrypted=encrypted          (required) serialized encrypted value
+  -p, --passphrase=passphrase        (required) passphrase for key derivation
+
+EXAMPLES
+  cryppo decrypt-der -p "secret phrase"  \
+  -e "Aes256Gcm.e-IJT9E8ew3wlz8=.LS0tCmFkOiBub25lCmF0OiAhIWJpbmFyeSB8LQogIHpTRzQzbVhlSFBsR3ZQQVZoNTVJQUE9PQppdjogISFiaW5hcnkgfC0KICBMU2NDNmVCZ2wrUCtuUkpaCg==.Pbkdf2Hmac.LS0tCidpJzogMjEzMjIKJ2l2JzogISFiaW5hcnkgfC0KICBzTmlGT21xWEg5b1piNzRNVElCcGxvNHlHV2M9CidsJzogMzIK"
+```
+
 ### `cryppo sign FILE DESTINATION`
 
 Sign a file with an RSA private key and write the signed contents to a new file
 
 ```
 USAGE
-$ cryppo sign -p [PRIVATE_KEY_FILE] FILE DESTINATION
+  cryppo sign -p [PRIVATE_KEY_FILE] FILE DESTINATION
 
 ARGUMENTS
   FILE         File to sign
@@ -240,7 +277,7 @@ Verify an RSA signed file and write the contents to another file.
 
 ```
 USAGE
-$ cryppo verify -P [PUBLIC_KEY_FILE] FILE DESTINATION
+  cryppo verify -P [PUBLIC_KEY_FILE] FILE DESTINATION
 
 ARGUMENTS
   FILE         Signed file contents to verify
@@ -255,5 +292,4 @@ EXAMPLE
 
 ## TODO
 
-* Command line interface for key derivation
 * New better serialization format for encryption/derivation artefacts
