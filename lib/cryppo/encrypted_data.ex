@@ -47,7 +47,7 @@ defmodule Cryppo.EncryptedData do
   end
 
   @doc false
-  @spec load(binary, any, any) ::
+  @spec load(String.t(), String.t(), String.t()) ::
           {:ok, t()}
           | {:error, :invalid_base64}
           | {:error, :invalid_yaml}

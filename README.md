@@ -46,9 +46,8 @@ The serialized payload can later be loaded by using `Cryppo.load/1` and decrypte
 `Cryppo.decrypt_with_derived_key/2` and the passphrase:
 
 ```elixir
-{:ok, decrypted, _encryption_key} = serialized
-|> Cryppo.load()
-|> Cryppo.decrypt_with_derived_key(passphrase)
+{:ok, encrypted} = Cryppo.load(serialized)
+{:ok, decrypted, _encryption_key} = Cryppo.decrypt_with_derived_key(encrypted, passphrase)
 
 IO.inspect(decrypted) #=> "some data to encrypt"
 ```
@@ -86,7 +85,8 @@ The serialized payload can later be loaded by using `Cryppo.load/1` and decrypte
 `Cryppo.decrypt/2` and the passphrase:
 
 ```elixir
-{:ok, decrypted} = serialized |> Cryppo.load() |> Cryppo.decrypt(encryption_key)
+{:ok, encrypted} = Cryppo.load(serialized)
+{:ok, decrypted} = Cryppo.decrypt(encrypted, encryption_key)
 
 Cryppo.inspect(decrypted) #=> "some data to encrypt"
 ```
@@ -102,9 +102,8 @@ private_key = Cryppo.generate_encryption_key("Rsa4096")
 rsa_signature = Cryppo.Rsa4096.sign("data to verify", private_key)
 serialized = Cryppo.serialize(rsa_signature)
 
-serialized
-|> Cryppo.load()
-|> Cryppo.Rsa4096.verify(Cryppo.Rsa4096.private_key_to_public_key(private_key)) # => true
+{:ok, signature} = Cryppo.load(serialized)
+Cryppo.Rsa4096.verify(signature, Cryppo.Rsa4096.private_key_to_public_key(private_key)) # => true
 ```
 
 ## Encryption Strategies

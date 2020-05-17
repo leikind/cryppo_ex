@@ -260,18 +260,16 @@ defmodule Cryppo do
   ## Examples
 
       iex> s = "Aes256Gcm.vDY5WSQjdYkBIAcbIfTgk4e-TXHp.LS0tCmFkOiBub25lCmF0OiAhIWJpbmFyeSB8LQogIGkyTWliWVlvdTh6b2FvM3ZOR0FiV1E9PQppdjogISFiaW5hcnkgfC0KICBUT0o4TUwyN1pId01tVmVwCg=="
-      iex> %Cryppo.EncryptedData{} = Cryppo.load(s)
+      iex> {:ok, %Cryppo.EncryptedData{}} = Cryppo.load(s)
 
       iex> s = "Aes256Gcm.fkPSVHHuUeRbRMGzLqno_7qh74OGfdl5dg==.LS0tCmFkOiBub25lCmF0OiAhIWJpbmFyeSB8LQogIEZSME5UNUx2Zmpsd3lEY3NKUm9VcEE9PQppdjogISFiaW5hcnkgfC0KICBtRWdzdDMvdjg0Q0V2aEZHCg==.Pbkdf2Hmac.LS0tCidpJzogMjE5MjgKJ2l2JzogISFiaW5hcnkgfC0KICBEZVNHRTlBVS9BVG1QM3JaeEYzUGt5V1ZHSU09CidsJzogMzIK"
-      iex> %Cryppo.EncryptedDataWithDerivedKey{} = Cryppo.load(s)
+      iex> {:ok, %Cryppo.EncryptedDataWithDerivedKey{}} = Cryppo.load(s)
 
       iex> s = "Sign.Rsa4096.V4JbRzpkud-3cHCGqDwGjS3TmRto5Te0iSAtD7oIzsDa83McBDYpU_eeswVZF9AGEvoAEQOCwpqJ_PgbjHKT2nHgLysK-btG6Nxk_K2J7A6Uq15X5QrOgIKTzC00dj1tzAN73u9lsRPKIfwPyp_Mlb6FNs1LoB7OvAusit6QPm8iAwHo4nOWBBUf3hO9b3gsWJ92FxnBsCLYFQj_zv4mnLHj7pDNVtq9Kp4hK6bgcIH4FZtyDKDr6bXEtlCGLDIY10UqNLylkagI36Gyafm-HnD57vRxjgHIGEsd2XcwDJ8PqqrzSYNxl-RyWD3wq0nXE_1rYJ7k1AKLM5G1Hg8B2whqcXpQ52x3zVFCAjlU9GNhT6pdUBxQYw09va7fe2w517PrwwMe90MW87fj3G7dGEKT95cDLTx1d84ybIUFUJOGKY0FF4LL0E3UqWQ92kU4bh-DSTkNmgItX34fiBIOpQDbF238IkRYyFA8LfMPfL-0_dnto9sH0E3Umi41qFvpA2Nq8r57FF4vCOSkXYWVfyitOkY_URqMLxS57azwZRBehJYDtvbqmzaYEDceeLjkxDi--Y10LT4Cz2SGiU--YDJM66PZ3Cp74gvDpsWlohcwYmMib5LrjdtvLOAtOZhoLZyGeeX0lDnwOum7lFRpJd8UIrOlTvpBo48ep2bpmgA=.VmVyaMO8dHVuZyB2ZXJib3Rlbg=="
-      iex> %Cryppo.RsaSignature{} = Cryppo.load(s)
+      iex> {:ok, %Cryppo.RsaSignature{}} = Cryppo.load(s)
   """
-  @spec load(binary) ::
-          EncryptedDataWithDerivedKey.t()
-          | EncryptedData.t()
-          | RsaSignature.t()
+  @spec load(String.t()) ::
+          {:ok, EncryptedDataWithDerivedKey.t() | EncryptedData.t() | RsaSignature.t()}
           | {:error, :invalid_base64}
           | {:error, :invalid_yaml}
           | {:error, :invalid_derivation_artefacts}
@@ -280,12 +278,12 @@ defmodule Cryppo do
   def load(serialized) when is_binary(serialized) do
     case String.split(serialized, ".") do
       ["Sign", "Rsa4096", signature, data] ->
-        RsaSignature.load(signature, data)
+        with {:ok, sig} <- RsaSignature.load(signature, data), do: {:ok, sig}
 
       [strategy_name, encrypted_data, encryption_artefacts] ->
         with {:ok, encrypted_data} <-
                EncryptedData.load(strategy_name, encrypted_data, encryption_artefacts) do
-          encrypted_data
+          {:ok, encrypted_data}
         end
 
       [
@@ -303,7 +301,7 @@ defmodule Cryppo do
                  key_derivation_strategy,
                  derivation_artefacts
                ),
-             do: encrypted_data_with_derived_key
+             do: {:ok, encrypted_data_with_derived_key}
 
       _ ->
         {:error, :invalid_serialization_value}

@@ -11,7 +11,7 @@ defmodule ProposalTest do
 
     # [_, _, encryption_artefacts, _, derivation_artefacts] = String.split(serialized, ".")
 
-    restored = Cryppo.load(serialized)
+    {:ok, restored} = Cryppo.load(serialized)
 
     assert data_encrypted_with_derived_key.encrypted_data.encryption_artefacts ==
              restored.encrypted_data.encryption_artefacts
@@ -27,7 +27,7 @@ defmodule ProposalTest do
 
     serialized = Serialization.serialize(data_encrypted_with_derived_key)
 
-    restored = Cryppo.load(serialized)
+    {:ok, restored} = Cryppo.load(serialized)
 
     assert data_encrypted_with_derived_key.encrypted_data.encryption_artefacts ==
              restored.encrypted_data.encryption_artefacts

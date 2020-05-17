@@ -34,7 +34,7 @@ defmodule SerializationTest do
 
       serialized = Cryppo.serialize(encrypted_data)
 
-      restored_encrypted_data = Cryppo.load(serialized)
+      {:ok, restored_encrypted_data} = Cryppo.load(serialized)
       assert %EncryptedData{} = restored_encrypted_data
 
       assert encrypted_data == restored_encrypted_data
@@ -90,7 +90,7 @@ defmodule SerializationTest do
 
       serialized = Cryppo.serialize(encrypted_data)
 
-      loaded_encrypted_data = Cryppo.load(serialized)
+      {:ok, loaded_encrypted_data} = Cryppo.load(serialized)
 
       assert %EncryptedDataWithDerivedKey{} = loaded_encrypted_data,
              "loaded_encrypted_data is a EncryptedDataWithDerivedKey struct"
@@ -139,11 +139,10 @@ defmodule SerializationTest do
       assert %EncryptedDataWithDerivedKey{} = encrypted_data,
              "encrypted_data is a EncryptedDataWithDerivedKey struct"
 
+      {:ok, encrypted} = encrypted_data |> Cryppo.serialize() |> Cryppo.load()
+
       {:ok, decrypted, _derived_key} =
-        encrypted_data
-        |> Cryppo.serialize()
-        |> Cryppo.load()
-        |> Cryppo.decrypt_with_derived_key("my passphrase")
+        encrypted |> Cryppo.decrypt_with_derived_key("my passphrase")
 
       assert decrypted == @plain_data
     end
@@ -176,7 +175,7 @@ defmodule SerializationTest do
 
       serialized = Cryppo.serialize(rsa_signature)
 
-      restored_rsa_signature = Cryppo.load(serialized)
+      {:ok, restored_rsa_signature} = Cryppo.load(serialized)
       assert restored_rsa_signature == rsa_signature
 
       public_key = Rsa4096.private_key_to_public_key(private_key)

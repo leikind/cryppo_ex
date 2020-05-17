@@ -7,7 +7,6 @@ defmodule Cryppo.Cli do
     EncryptedData,
     EncryptedDataWithDerivedKey,
     EncryptionKey,
-    EncryptionKey,
     Rsa4096,
     RsaSignature
   }
@@ -395,7 +394,7 @@ defmodule Cryppo.Cli do
   defp decrypt(data, %EncryptionKey{} = key, strategy) do
     IO.puts("Encryption strategy: #{strategy}")
 
-    with encrypted = %EncryptedData{} <- Cryppo.load(data),
+    with {:ok, encrypted = %EncryptedData{}} <- Cryppo.load(data),
          {:ok, decrypted} <- Cryppo.decrypt(encrypted, key) do
       IO.puts(decrypted)
     else
@@ -493,7 +492,7 @@ defmodule Cryppo.Cli do
         with {:ok, pem} <- File.read(public_key_pem_file),
              {:ok, data_to_verify_serialized} <- File.read(file_to_verify),
              {:ok, key} <- Rsa4096.from_pem(pem),
-             rsa_signature = %RsaSignature{} <- Cryppo.load(data_to_verify_serialized) do
+             {:ok, rsa_signature = %RsaSignature{}} <- Cryppo.load(data_to_verify_serialized) do
           if Rsa4096.verify(rsa_signature, key) do
             IO.puts("Data signature verified")
 
@@ -545,7 +544,7 @@ defmodule Cryppo.Cli do
   end
 
   defp decrypt_with_derived_key(data, passphrase) do
-    with encrypted = %EncryptedDataWithDerivedKey{} <- Cryppo.load(data),
+    with {:ok, encrypted = %EncryptedDataWithDerivedKey{}} <- Cryppo.load(data),
          {:ok, decrypted, _key} <- Cryppo.decrypt_with_derived_key(encrypted, passphrase) do
       IO.puts(decrypted)
     else

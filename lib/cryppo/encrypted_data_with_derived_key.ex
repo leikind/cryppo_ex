@@ -32,7 +32,7 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
   defstruct [:encrypted_data, :derived_key]
 
   @doc false
-  @spec load(any, any, any, binary, any) ::
+  @spec load(String.t(), String.t(), String.t(), String.t(), String.t()) ::
           {:ok, t()}
           | {:error, :invalid_base64 | :invalid_derivation_artefacts | :invalid_yaml}
           | {:unsupported_encryption_strategy, binary}

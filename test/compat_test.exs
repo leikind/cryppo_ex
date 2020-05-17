@@ -9,7 +9,7 @@ defmodule CompatTest do
     serialized_and_encrypted =
       "Aes256Gcm.29dTcNFcPs-0SOnA.LS0tCml2OiAhYmluYXJ5IHwtCiAgUU1oRnpWZWU3bzE5Qy9XcwphdDogIWJpbmFyeSB8LQogIGFKQjVhYU0wWGZnTjZCYm42U0FzUnc9PQphZDogbm9uZQo="
 
-    restored_encrypted_data = Cryppo.load(serialized_and_encrypted)
+    {:ok, restored_encrypted_data} = Cryppo.load(serialized_and_encrypted)
 
     assert Cryppo.decrypt(restored_encrypted_data, key) == {:ok, "this is love"}
   end
@@ -21,7 +21,7 @@ defmodule CompatTest do
     serialized =
       "Rsa4096.mxqaQRwtp0SBmno6syisN4orlH-Q4-60I_CmMYXD0e3QliXrK4VUn0dRBHJNQNHoJNRAtd5-Y4OniM8W5cFUMkVhseaQsBR3AXIFUvcQYID8_m5SRp6rhcOxih_6Httk6UBqSUg4s8LvBO1MXCjikBHSwjvrth_EowC9epOR7YeBEKDShOdbBf7riP5aXby037CS-ofI7wVv2dGoc-rY1Z4Khdufofu9VhdejmXQG3vvzPyIkEv-zy_fgtr31qY0VSQ0r2W3VRsRE94KOF88cSl2LmDv0tD96VMfudqFQsAtieTCo7Be-BpDcnSBhiVJGN9Sc07DRHSJ88EnmqTGwaRuK-6fSdyPEhRWH0rAz0CLg42gks3bpfYp68dEhWxi5zL_dZke1k-R82ak3fGtGTbjZxH0V5s6WczGRCQwAl86fE95LI_9JEWpeiqhbRlu3aRTKcs4EZC4SRROf0-5Qa-l4atrVp2gTRX6H8tPCdqNko5vUfub4RIehOJDq6Y--rw53ZFXD5h89ifXQgVn_uz1SAo78DR8TDGMRNps2JypcgMHjsYG3SyGw-LXp61ADZGx_5mm6tJK3Ubib30D7j5R_QV_bVSSaRCv16tXn9kgbg6k-BLseNvC7f9kuS2aabiqGROwzHuBL4lbJOscoCNUAGmLz_ShYlhuysUP_D0=.LS0tIHt9Cg=="
 
-    restored_encrypted_data = Cryppo.load(serialized)
+    {:ok, restored_encrypted_data} = Cryppo.load(serialized)
 
     assert Cryppo.decrypt(restored_encrypted_data, pem) == {:ok, "this is love"}
   end
@@ -34,15 +34,17 @@ defmodule CompatTest do
     assert Cryppo.decrypt(encrypted, pem) == {:ok, "this is love"}
 
     ser = Cryppo.Serialization.serialize(encrypted)
-    restored_encrypted = Cryppo.load(ser)
+    {:ok, restored_encrypted} = Cryppo.load(ser)
     assert Cryppo.decrypt(restored_encrypted, pem) == {:ok, "this is love"}
   end
 
   test "decrypt a value encrypted with a derived key and serialized with ruby Cryppo" do
-    {:ok, decrypted, derived_key} =
+    {:ok, encrypted} =
       "Aes256Gcm.8nGHS3XRrIdmSqju.LS0tCml2OiAhYmluYXJ5IHwtCiAgcWFFR0tZeklzMEVQdTFoYgphdDogIWJpbmFyeSB8LQogIGUxeVBxMGVJM2F1S3BVZ0pUYitXR1E9PQphZDogbm9uZQo=.Pbkdf2Hmac.LS0tCml2OiAhYmluYXJ5IHwtCiAgMzdzZTd0N25jMUZWT1NkNldjUUQ1UkpNWVZzPQppOiAyMDg2NwpsOiAzMgo="
       |> Cryppo.load()
-      |> Cryppo.decrypt_with_derived_key("this is a passphrase")
+
+    {:ok, decrypted, derived_key} =
+      encrypted |> Cryppo.decrypt_with_derived_key("this is a passphrase")
 
     assert decrypted == "this is love"
     assert %DerivedKey{} = derived_key
@@ -58,7 +60,7 @@ defmodule CompatTest do
     {:ok, private_key} = Rsa4096.from_pem(pem)
     public_key_erlang_tuple = Rsa4096.private_key_to_public_key(private_key)
 
-    signature = Cryppo.load(serialized_signature)
+    {:ok, signature} = Cryppo.load(serialized_signature)
 
     assert Rsa4096.verify(signature, public_key_erlang_tuple) == true
   end
