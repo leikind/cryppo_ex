@@ -10,6 +10,9 @@ defmodule Cryppo.EncryptedData do
 
   alias Cryppo.{EncryptedData, EncryptionArtefacts, Serialization}
 
+  import Cryppo.Base64
+  import Cryppo.Strategies, only: [find_strategy: 1]
+
   @typedoc """
   Struct `Cryppo.EncryptedData`
 
@@ -41,6 +44,26 @@ defmodule Cryppo.EncryptedData do
       encrypted_data: encrypted_data,
       encryption_artefacts: encryption_artefacts
     }
+  end
+
+  @doc false
+  @spec load(binary, any, any) ::
+          t()
+          | {:error, :invalid_base64}
+          | {:error, :invalid_yaml}
+          | {:unsupported_encryption_strategy, binary}
+  def load(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
+    case find_strategy(strategy_name) do
+      {:ok, encryption_strategy_mod} ->
+        with {:ok, encrypted_data} <- decode_base64(encrypted_data_base64),
+             encryption_artefacts = %EncryptionArtefacts{} <-
+               EncryptionArtefacts.load(encryption_artefacts_base64) do
+          new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
+        end
+
+      err ->
+        err
+    end
   end
 
   defimpl Serialization do

@@ -34,7 +34,7 @@ defmodule CompatTest do
     assert Cryppo.decrypt(encrypted, pem) == {:ok, "this is love"}
 
     ser = Cryppo.Serialization.serialize(encrypted)
-    restored_encrypted = Cryppo.Loader.load(ser)
+    restored_encrypted = Cryppo.load(ser)
     assert Cryppo.decrypt(restored_encrypted, pem) == {:ok, "this is love"}
   end
 

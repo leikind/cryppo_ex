@@ -4,6 +4,7 @@ defmodule Cryppo.RsaSignature do
   """
 
   alias Cryppo.{RsaSignature, Serialization}
+  import Cryppo.Base64
 
   @typedoc """
   Struct `Cryppo.RsaSignature`
@@ -18,6 +19,15 @@ defmodule Cryppo.RsaSignature do
 
   @enforce_keys [:signature, :data]
   defstruct [:signature, :data]
+
+  @doc false
+  @spec load(binary, binary) :: t() | {:error, :invalid_base64}
+  def load(signature, data) do
+    with {:ok, signature} <- decode_base64(signature),
+         {:ok, data} <- decode_base64(data) do
+      %__MODULE__{signature: signature, data: data}
+    end
+  end
 
   defimpl Serialization do
     @spec serialize(RsaSignature.t()) :: binary
