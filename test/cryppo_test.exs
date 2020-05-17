@@ -218,12 +218,7 @@ defmodule CryppoTest do
 
   test "Reusing a key already present in EncryptedDataWithDerivedKey" do
     encrypted_data =
-      @plain_data
-      |> Cryppo.encrypt_with_derived_key(
-        "Aes256Gcm",
-        "Pbkdf2Hmac",
-        "my passphrase"
-      )
+      @plain_data |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "my passphrase")
 
     assert(encrypted_data)
 

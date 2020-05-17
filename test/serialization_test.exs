@@ -4,44 +4,67 @@ defmodule SerializationTest do
   alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, Rsa4096}
 
   @plain_data "Hello world!"
+  @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
 
   describe "with a generated key" do
-    test "serializes the data" do
-      strategy = "Aes256Gcm"
-      key = Cryppo.generate_encryption_key(strategy)
+    test "Legacy format: encrypt serialize, de-serialize, decrypt with aes_256_gcm" do
+      for strategy <- @all_encryption_strategies do
+        key = Cryppo.generate_encryption_key(strategy)
 
-      encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
+        encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
+        assert %EncryptedData{} = encrypted_data
 
-      serialized = Cryppo.serialize(encrypted_data)
-      assert is_binary(serialized)
+        serialized = Cryppo.serialize(encrypted_data, version: :legacy)
 
-      assert [p1, p2, p3] = String.split(serialized, ".")
+        {:ok, restored_encrypted_data} = Cryppo.load(serialized)
+        assert %EncryptedData{} = restored_encrypted_data
 
-      assert p1 == strategy
+        assert encrypted_data == restored_encrypted_data
 
-      {:ok, encrypted_data2} = Base.url_decode64(p2)
-      assert encrypted_data2 == encrypted_data.encrypted_data
+        {:ok, decrypted_data} = Cryppo.decrypt(restored_encrypted_data, key)
 
-      assert p3
+        assert decrypted_data == @plain_data
+      end
     end
 
-    test "encrypt serialize, de-serialize, decrypt with aes_256_gcm" do
-      strategy = "Aes256Gcm"
-      key = Cryppo.generate_encryption_key(strategy)
+    test "serializes the data" do
+      for strategy <- @all_encryption_strategies do
+        key = Cryppo.generate_encryption_key(strategy)
 
-      encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
-      assert %EncryptedData{} = encrypted_data
+        encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
 
-      serialized = Cryppo.serialize(encrypted_data)
+        serialized = Cryppo.serialize(encrypted_data)
+        assert is_binary(serialized)
 
-      {:ok, restored_encrypted_data} = Cryppo.load(serialized)
-      assert %EncryptedData{} = restored_encrypted_data
+        assert [p1, p2, p3] = String.split(serialized, ".")
 
-      assert encrypted_data == restored_encrypted_data
+        assert p1 == strategy
 
-      {:ok, decrypted_data} = Cryppo.decrypt(restored_encrypted_data, key)
+        {:ok, encrypted_data2} = Base.url_decode64(p2)
+        assert encrypted_data2 == encrypted_data.encrypted_data
 
-      assert decrypted_data == @plain_data
+        assert p3
+      end
+    end
+
+    test "encrypt serialize, de-serialize, decrypt" do
+      for strategy <- @all_encryption_strategies do
+        key = Cryppo.generate_encryption_key(strategy)
+
+        encrypted_data = @plain_data |> Cryppo.encrypt(strategy, key)
+        assert %EncryptedData{} = encrypted_data
+
+        serialized = Cryppo.serialize(encrypted_data)
+
+        {:ok, restored_encrypted_data} = Cryppo.load(serialized)
+        assert %EncryptedData{} = restored_encrypted_data
+
+        assert encrypted_data == restored_encrypted_data
+
+        {:ok, decrypted_data} = Cryppo.decrypt(restored_encrypted_data, key)
+
+        assert decrypted_data == @plain_data
+      end
     end
   end
 
@@ -78,12 +101,7 @@ defmodule SerializationTest do
 
     test "loads the data" do
       encrypted_data =
-        @plain_data
-        |> Cryppo.encrypt_with_derived_key(
-          "Aes256Gcm",
-          "Pbkdf2Hmac",
-          "my passphrase"
-        )
+        @plain_data |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "my passphrase")
 
       assert %EncryptedDataWithDerivedKey{} = encrypted_data,
              "encrypted_data is a EncryptedDataWithDerivedKey struct"
@@ -127,14 +145,26 @@ defmodule SerializationTest do
                encrypted_data.encrypted_data.encryption_strategy_module
     end
 
+    test "Legacy serialization format: encrypt with a derived key, serialize, load, encrypt with the derived key" do
+      encrypted_data =
+        @plain_data
+        |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "my passphrase")
+
+      assert %EncryptedDataWithDerivedKey{} = encrypted_data,
+             "encrypted_data is a EncryptedDataWithDerivedKey struct"
+
+      {:ok, encrypted} = encrypted_data |> Cryppo.serialize(version: :legacy) |> Cryppo.load()
+
+      {:ok, decrypted, _derived_key} =
+        encrypted |> Cryppo.decrypt_with_derived_key("my passphrase")
+
+      assert decrypted == @plain_data
+    end
+
     test "encrypt with a derived key, serialize, load, encrypt with the derived key" do
       encrypted_data =
         @plain_data
-        |> Cryppo.encrypt_with_derived_key(
-          "Aes256Gcm",
-          "Pbkdf2Hmac",
-          "my passphrase"
-        )
+        |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "my passphrase")
 
       assert %EncryptedDataWithDerivedKey{} = encrypted_data,
              "encrypted_data is a EncryptedDataWithDerivedKey struct"

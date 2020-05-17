@@ -30,8 +30,8 @@ defmodule Cryppo.RsaSignature do
   end
 
   defimpl Serialization do
-    @spec serialize(RsaSignature.t()) :: binary
-    def serialize(%RsaSignature{signature: signature, data: data}) do
+    @spec serialize(RsaSignature.t(), Keyword.t()) :: binary
+    def serialize(%RsaSignature{signature: signature, data: data}, _opts \\ []) do
       [
         "Sign.Rsa4096",
         Base.url_encode64(signature, padding: true),

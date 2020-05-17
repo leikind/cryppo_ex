@@ -38,22 +38,65 @@ defmodule Cryppo.DerivedKey do
   @enforce_keys [:key_derivation_strategy, :salt, :iter, :length, :hash]
   defstruct [:encryption_key, :key_derivation_strategy, :salt, :iter, :length, :hash]
 
+  # 75 is the version byte for derivation artefacts encoded with BSON
+  @current_version "K"
+
+  @spec current_version :: <<_::8>>
+  def current_version, do: @current_version
+
+  @spec load_artefacts(binary) ::
+          {:error, :invalid_bson | :invalid_derivation_artefacts | :invalid_yaml}
+          | {:ok, binary, integer, integer}
+  def load_artefacts(<<"---", _::binary>> = bin) do
+    with {:ok, derivation_artefacts} <- Yaml.decode(bin) do
+      parse_derivation_artefacts(derivation_artefacts)
+    end
+  end
+
+  def load_artefacts(<<@current_version::binary, bin::binary>>) do
+    with {:ok, map} <- Cyanide.decode(bin), do: map |> parse_derivation_artefacts()
+  end
+
+  @spec parse_derivation_artefacts(any) ::
+          {:error, :invalid_derivation_artefacts} | {:ok, binary, integer, integer}
+  defp parse_derivation_artefacts(%{"iv" => iv, "i" => i, "l" => l}), do: {:ok, iv, i, l}
+  defp parse_derivation_artefacts(_), do: {:error, :invalid_derivation_artefacts}
+
   defimpl Serialization do
-    @spec serialize(DerivedKey.t()) :: binary
-    def serialize(%DerivedKey{
-          key_derivation_strategy: key_derivation_mod,
-          salt: salt,
-          iter: iterations,
-          length: length
-        }) do
+    @spec serialize(DerivedKey.t(), Keyword.t()) ::
+            String.t() | {:error, :cannot_bson_encode | :unrecognized_format}
+    def serialize(
+          %DerivedKey{
+            key_derivation_strategy: key_derivation_mod,
+            salt: salt,
+            iter: iterations,
+            length: length
+          },
+          opts \\ []
+        ) do
+      version = Keyword.get(opts, :version, :latest_version)
       key_derivation_mod = apply(key_derivation_mod, :strategy_name, [])
 
-      derivation_artefacts =
-        %{"iv" => salt, "i" => iterations, "l" => length}
-        |> Yaml.encode()
-        |> Base.url_encode64(padding: true)
-
-      [key_derivation_mod, derivation_artefacts] |> Enum.join(".")
+      with {:ok, bytes} <- serialize_for_version({version, {salt, iterations, length}}) do
+        derivation_artefacts = Base.url_encode64(bytes, padding: true)
+        [key_derivation_mod, derivation_artefacts] |> Enum.join(".")
+      end
     end
+
+    @spec serialize_for_version({atom, {any, any, any}}) ::
+            {:error, :cannot_bson_encode | :unrecognized_format} | {:ok, binary}
+    def serialize_for_version({:legacy, {salt, iterations, length}}) do
+      {:ok, Yaml.encode(%{"iv" => salt, "i" => iterations, "l" => length})}
+    end
+
+    def serialize_for_version({:latest_version, {salt, iterations, length}}) do
+      with {:ok, bin} <- Cyanide.encode(%{"iv" => salt, "i" => iterations, "l" => length}) do
+        with_version_prefix = <<DerivedKey.current_version()::binary, bin::binary>>
+
+        {:ok, with_version_prefix}
+      end
+    end
+
+    def serialize_for_version({_, {_, _, _}}), do: {:error, :unrecognized_format}
   end
 end

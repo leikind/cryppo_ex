@@ -288,7 +288,3 @@ OPTIONS
 EXAMPLE
   cryppo verify -P public.pem my_file.signed.txt my_file.txt
 ```
-
-## TODO
-
-* New better serialization format for encryption/derivation artefacts

@@ -6,7 +6,7 @@ defmodule Cryppo.EncryptionArtefacts do
   makes sense for the underlying cipher.
   """
 
-  alias Cryppo.Yaml
+  alias Cryppo.{EncryptionArtefacts, Serialization, Yaml}
   import Cryppo.Base64
 
   @typedoc "Struct `Cryppo.EncryptionArtefacts`"
@@ -17,34 +17,81 @@ defmodule Cryppo.EncryptionArtefacts do
           additional_authenticated_data: binary | nil
         }
 
-  alias Cryppo.{EncryptionArtefacts, Serialization, Yaml}
-
   defstruct [:initialization_vector, :authentication_tag, :additional_authenticated_data]
 
+  # 65 is the version byte for encryption artefacts encoded with BSON
+  @current_version "A"
+
+  @spec current_version :: <<_::8>>
+  def current_version, do: @current_version
+
   @doc false
-  @spec load(String.t()) :: {:ok, t()} | {:error, :invalid_base64 | :invalid_yaml}
+  @spec load(String.t()) :: {:ok, t()} | {:error, :invalid_base64 | :invalid_yaml | :invalid_bson}
   def load(s) when is_binary(s) do
-    with {:ok, encryption_artefacts_base64} <- decode_base64(s),
-         {:ok, %{} = artefacts_map} <- Yaml.decode(encryption_artefacts_base64) do
+    with {:ok, encryption_artefacts_base64} <- decode_base64(s) do
+      load_artefacts(encryption_artefacts_base64)
+    end
+  end
+
+  @spec load_artefacts(binary) ::
+          {:error, :invalid_bson | :invalid_yaml}
+          | {:ok, EncryptionArtefacts.t()}
+  defp load_artefacts(<<"---", _::binary>> = bin) do
+    with {:ok, %{} = artefacts_map} <- Yaml.decode(bin) do
       {:ok,
        %__MODULE__{
-         initialization_vector: artefacts_map["iv"],
-         authentication_tag: artefacts_map["at"],
-         additional_authenticated_data: artefacts_map["ad"]
+         initialization_vector: to_nil(artefacts_map["iv"]),
+         authentication_tag: to_nil(artefacts_map["at"]),
+         additional_authenticated_data: to_nil(artefacts_map["ad"])
        }}
     end
   end
 
-  defimpl Serialization do
-    @spec serialize(EncryptionArtefacts.t()) :: binary
-    def serialize(%EncryptionArtefacts{
-          initialization_vector: iv,
-          authentication_tag: at,
-          additional_authenticated_data: ad
-        }) do
-      %{iv: iv, at: at, ad: ad}
-      |> Yaml.encode()
-      |> Base.url_encode64(padding: true)
+  defp load_artefacts(<<@current_version::binary, bin::binary>>) do
+    with {:ok, %{"iv" => iv, "at" => at, "ad" => ad}} <- Cyanide.decode(bin) do
+      {:ok,
+       %__MODULE__{
+         initialization_vector: to_nil(iv),
+         authentication_tag: to_nil(at),
+         additional_authenticated_data: to_nil(ad)
+       }}
     end
+  end
+
+  defp to_nil(""), do: nil
+  defp to_nil(v), do: v
+
+  defimpl Serialization do
+    @spec serialize(EncryptionArtefacts.t(), Keyword.t()) ::
+            String.t() | {:error, :cannot_bson_encode | :unrecognized_format}
+    def serialize(
+          %EncryptionArtefacts{
+            initialization_vector: iv,
+            authentication_tag: at,
+            additional_authenticated_data: ad
+          },
+          opts \\ []
+        ) do
+      version = Keyword.get(opts, :version, :latest_version)
+
+      with {:ok, bytes} <- serialize_for_version({version, {iv, at, ad}}) do
+        Base.url_encode64(bytes, padding: true)
+      end
+    end
+
+    @spec serialize_for_version({atom, {any, any, any}}) ::
+            {:error, :cannot_bson_encode | :unrecognized_format} | {:ok, binary}
+    defp serialize_for_version({:legacy, {iv, at, ad}}) do
+      {:ok, Yaml.encode(%{"iv" => iv, "at" => at, "ad" => ad})}
+    end
+
+    defp serialize_for_version({:latest_version, {iv, at, ad}}) do
+      with {:ok, bin} <- Cyanide.encode(%{"iv" => iv, "at" => at, "ad" => ad}) do
+        with_version_prefix = <<EncryptionArtefacts.current_version()::binary, bin::binary>>
+        {:ok, with_version_prefix}
+      end
+    end
+
+    defp serialize_for_version({_, {_, _, _}}), do: {:error, :unrecognized_format}
   end
 end
