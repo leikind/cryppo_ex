@@ -1,7 +1,14 @@
 defmodule Cryppo.Loader do
   @moduledoc false
 
-  alias Cryppo.{DerivedKey, EncryptedData, EncryptedDataWithDerivedKey, RsaSignature, Yaml}
+  alias Cryppo.{
+    DerivedKey,
+    EncryptedData,
+    EncryptedDataWithDerivedKey,
+    EncryptionArtefacts,
+    RsaSignature,
+    Yaml
+  }
 
   import Cryppo.Strategies, only: [find_strategy: 1, find_key_derivation_strategy: 1]
 
@@ -59,13 +66,26 @@ defmodule Cryppo.Loader do
     case find_strategy(strategy_name) do
       {:ok, encryption_strategy_mod} ->
         with {:ok, encrypted_data} <- decode_base64(encrypted_data_base64),
-             {:ok, encryption_artefacts_base64} <- decode_base64(encryption_artefacts_base64),
-             {:ok, encryption_artefacts} <- Yaml.decode(encryption_artefacts_base64) do
+             encryption_artefacts = %EncryptionArtefacts{} <-
+               to_encryption_artefacts(encryption_artefacts_base64) do
           EncryptedData.new(encryption_strategy_mod, encrypted_data, encryption_artefacts)
         end
 
       err ->
         err
+    end
+  end
+
+  @spec to_encryption_artefacts(binary) ::
+          EncryptionArtefacts.t() | {:error, :invalid_base64} | {:ok, :invalid_yaml | map}
+  defp to_encryption_artefacts(s) when is_binary(s) do
+    with {:ok, encryption_artefacts_base64} <- decode_base64(s),
+         {:ok, %{} = artefacts_map} <- Yaml.decode(encryption_artefacts_base64) do
+      %EncryptionArtefacts{
+        initialization_vector: artefacts_map["iv"],
+        authentication_tag: artefacts_map["at"],
+        additional_authenticated_data: artefacts_map["ad"]
+      }
     end
   end
 

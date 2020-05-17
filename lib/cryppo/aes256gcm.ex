@@ -29,7 +29,7 @@ defmodule Cryppo.Aes256gcm do
   end
 
   @spec encrypt(binary, EncryptionKey.t()) ::
-          {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
+          {:ok, binary, EncryptionArtefacts.t()} | :encryption_error
   @impl EncryptionStrategy
   def encrypt(data, %EncryptionKey{key: key}) when is_binary(data) and is_binary(key) do
     iv = :crypto.strong_rand_bytes(@iv_byte_size)
@@ -45,7 +45,13 @@ defmodule Cryppo.Aes256gcm do
         true
       )
 
-    {:ok, encrypted, iv: iv, at: auth_tag, ad: @additional_authenticated_data}
+    artefacts = %EncryptionArtefacts{
+      initialization_vector: iv,
+      authentication_tag: auth_tag,
+      additional_authenticated_data: @additional_authenticated_data
+    }
+
+    {:ok, encrypted, artefacts}
   end
 
   def encrypt(_, _), do: :encryption_error
@@ -56,7 +62,11 @@ defmodule Cryppo.Aes256gcm do
   def decrypt(
         %EncryptedData{
           encrypted_data: encrypted_data,
-          encryption_artefacts: %{iv: iv, at: auth_tag, ad: auth_data}
+          encryption_artefacts: %EncryptionArtefacts{
+            initialization_vector: iv,
+            authentication_tag: auth_tag,
+            additional_authenticated_data: auth_data
+          }
         },
         %EncryptionKey{key: key}
       )

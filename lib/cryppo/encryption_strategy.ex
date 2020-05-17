@@ -3,14 +3,18 @@ defmodule Cryppo.EncryptionStrategy do
 
   # EncryptionStrategy behavior and macros to inject functions common to all EncryptionStrategy modules
 
-  alias Cryppo.{EncryptedData, EncryptionKey}
+  alias Cryppo.{EncryptedData, EncryptionArtefacts, EncryptionKey}
 
   @callback strategy_name :: binary
+
   @callback generate_key :: EncryptionKey.t()
+
   @callback build_encryption_key(any) ::
               {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
+
   @callback encrypt(binary, EncryptionKey.t()) ::
-              {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
+              {:ok, binary, EncryptionArtefacts.t()} | :encryption_error
+
   @callback decrypt(EncryptedData.t(), EncryptionKey.t()) ::
               {:ok, binary} | :decryption_error | {:decryption_error, {any, any}}
 
@@ -18,7 +22,7 @@ defmodule Cryppo.EncryptionStrategy do
   defmacro __using__(strategy_name: strategy_name) when is_binary(strategy_name) do
     [
       quote do
-        alias Cryppo.{EncryptedData, EncryptionKey, EncryptionStrategy}
+        alias Cryppo.{EncryptedData, EncryptionArtefacts, EncryptionKey, EncryptionStrategy}
         @behaviour EncryptionStrategy
       end,
       inject_strategy_name(strategy_name),

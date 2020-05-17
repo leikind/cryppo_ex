@@ -135,9 +135,7 @@ defmodule Cryppo do
         %EncryptedData{encryption_strategy_module: mod} = encrypted_data,
         encryption_key_or_raw_key
       ) do
-    encryption_key_or_raw_key =
-      encryption_key_or_raw_key
-      |> add_encryption_strategy_module(mod)
+    encryption_key_or_raw_key = encryption_key_or_raw_key |> add_encryption_strategy_module(mod)
 
     apply(mod, :run_decryption, [encrypted_data, encryption_key_or_raw_key])
   end

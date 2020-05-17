@@ -54,7 +54,7 @@ defmodule Cryppo.Rsa4096 do
   end
 
   @spec encrypt(binary, EncryptionKey.t()) ::
-          {:ok, binary, EncryptedData.encryption_artefacts()} | :encryption_error
+          {:ok, binary, EncryptionArtefacts.t()} | :encryption_error
   @impl EncryptionStrategy
   def encrypt(data, %EncryptionKey{key: private_key})
       when is_binary(data) and elem(private_key, 0) == :RSAPrivateKey and
@@ -67,7 +67,7 @@ defmodule Cryppo.Rsa4096 do
       when is_binary(data) and elem(public_key, 0) == :RSAPublicKey and
              tuple_size(public_key) == 3 do
     encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
-    {:ok, encrypted, []}
+    {:ok, encrypted, %EncryptionArtefacts{}}
   end
 
   def encrypt(_, _), do: :encryption_error

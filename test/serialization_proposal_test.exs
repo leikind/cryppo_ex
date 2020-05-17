@@ -86,7 +86,7 @@ defmodule ProposalTest do
     data_encrypted_with_derived_key =
       Cryppo.encrypt_with_derived_key("this is love", "Aes256Gcm", "Pbkdf2Hmac", "my passphrase")
 
-    %{ad: ad, at: at, iv: iv} =
+    %{additional_authenticated_data: ad, authentication_tag: at, initialization_vector: iv} =
       data_encrypted_with_derived_key.encrypted_data.encryption_artefacts
 
     packed = pack_encryption_artefacts(at, iv, ad)
@@ -108,7 +108,7 @@ defmodule ProposalTest do
 
     packed_derivation_artefacts = pack_derivation_artefacts(l, i, iv)
 
-    %{ad: ad, at: at, iv: iv} =
+    %{additional_authenticated_data: ad, authentication_tag: at, initialization_vector: iv} =
       data_encrypted_with_derived_key.encrypted_data.encryption_artefacts
 
     packed_encryption_artefacts = pack_encryption_artefacts(at, iv, ad)
