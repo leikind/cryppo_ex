@@ -76,7 +76,7 @@ defmodule CompatTest do
     |> Enum.map(fn %{
                      "encryption_strategy" => encryption_strategy,
                      "expected_decryption_result" => expected_decryption_result,
-                     "format" => _format,
+                     "format" => format,
                      "key" => key,
                      "serialized" => serialized
                    } ->
@@ -95,6 +95,13 @@ defmodule CompatTest do
 
       {:ok, decrypted} = Cryppo.decrypt(encrypted_data, encryption_key)
       assert decrypted == expected_decryption_result
+
+      serialized_again =
+        if format == "latest_version",
+          do: Cryppo.serialize(encrypted_data),
+          else: Cryppo.serialize(encrypted_data, version: :legacy)
+
+      assert serialized_again == serialized
     end)
   end
 
@@ -108,7 +115,7 @@ defmodule CompatTest do
                      "derivation_strategy" => _derivation_strategy,
                      "encryption_strategy" => _encryption_strategy,
                      "expected_decryption_result" => expected_decryption_result,
-                     "format" => _format,
+                     "format" => format,
                      "passphrase" => passphrase,
                      "serialized" => serialized
                    } ->
@@ -117,6 +124,13 @@ defmodule CompatTest do
       {:ok, decrypted, _key} = Cryppo.decrypt_with_derived_key(encrypted_data, passphrase)
 
       assert decrypted == expected_decryption_result
+
+      serialized_again =
+        if format == "latest_version",
+          do: Cryppo.serialize(encrypted_data),
+          else: Cryppo.serialize(encrypted_data, version: :legacy)
+
+      assert serialized_again == serialized
     end)
   end
 
@@ -133,6 +147,8 @@ defmodule CompatTest do
       {:ok, signature} = serialized_signature |> Cryppo.load()
 
       assert Rsa4096.verify(signature, public_pem)
+
+      assert Cryppo.serialize(signature) == serialized_signature
     end)
   end
 
