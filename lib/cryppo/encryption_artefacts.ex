@@ -48,7 +48,7 @@ defmodule Cryppo.EncryptionArtefacts do
   end
 
   defp load_artefacts(<<@current_version::binary, bin::binary>>) do
-    with {:ok, %{"iv" => iv, "at" => at, "ad" => ad}} <- Cyanide.decode(bin) do
+    with {:ok, %{"iv" => {0x0, iv}, "at" => {0x0, at}, "ad" => ad}} <- Cyanide.decode(bin) do
       {:ok,
        %__MODULE__{
          initialization_vector: to_nil(iv),
@@ -86,12 +86,19 @@ defmodule Cryppo.EncryptionArtefacts do
     end
 
     defp serialize_for_version({:latest_version, {iv, at, ad}}) do
-      with {:ok, bin} <- Cyanide.encode(%{"iv" => iv, "at" => at, "ad" => ad}) do
+      with_wrapped_binaries = %{"iv" => wrap_bin(iv), "at" => wrap_bin(at), "ad" => ad}
+
+      with {:ok, bin} <- Cyanide.encode(with_wrapped_binaries) do
         with_version_prefix = <<EncryptionArtefacts.current_version()::binary, bin::binary>>
         {:ok, with_version_prefix}
       end
     end
 
     defp serialize_for_version({_, {_, _, _}}), do: {:error, :unrecognized_format}
+
+    # 0x0 is a marker for generic binary subtype in BSON
+    # see http://bsonspec.org/spec.html
+    defp wrap_bin(nil), do: {0x0, ""}
+    defp wrap_bin(bin), do: {0x0, bin}
   end
 end

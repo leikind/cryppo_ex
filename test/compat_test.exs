@@ -67,15 +67,10 @@ defmodule CompatTest do
     assert Rsa4096.verify(signature, public_key_erlang_tuple) == true
   end
 
-  test "the corpus of serialized values" do
+  test "the corpus of serialized values: encryption with generated keys" do
     {:ok, json} = File.read(@corpus_of_tests)
 
-    {:ok,
-     %{
-       "encryption_with_key" => encryption_with_key,
-       "encryption_with_derived_key" => encryption_with_derived_key,
-       "signatures" => signatures
-     }} = Jason.decode(json)
+    {:ok, %{"encryption_with_key" => encryption_with_key}} = Jason.decode(json)
 
     encryption_with_key
     |> Enum.map(fn %{
@@ -101,6 +96,12 @@ defmodule CompatTest do
       {:ok, decrypted} = Cryppo.decrypt(encrypted_data, encryption_key)
       assert decrypted == expected_decryption_result
     end)
+  end
+
+  test "the corpus of serialized values: encryption with derived keys" do
+    {:ok, json} = File.read(@corpus_of_tests)
+
+    {:ok, %{"encryption_with_derived_key" => encryption_with_derived_key}} = Jason.decode(json)
 
     encryption_with_derived_key
     |> Enum.map(fn %{
@@ -117,6 +118,12 @@ defmodule CompatTest do
 
       assert decrypted == expected_decryption_result
     end)
+  end
+
+  test "the corpus of serialized values: RSA signatures" do
+    {:ok, json} = File.read(@corpus_of_tests)
+
+    {:ok, %{"signatures" => signatures}} = Jason.decode(json)
 
     signatures
     |> Enum.map(fn %{

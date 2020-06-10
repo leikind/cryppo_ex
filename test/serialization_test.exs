@@ -82,7 +82,6 @@ defmodule SerializationTest do
         )
 
       serialized = Cryppo.serialize(encrypted_data_with_derived_key)
-
       assert is_binary(serialized)
 
       assert [p1, p2, p3, p4, p5] = String.split(serialized, ".")
