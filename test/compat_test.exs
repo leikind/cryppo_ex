@@ -1,7 +1,9 @@
 defmodule CompatTest do
   use ExUnit.Case
 
-  alias Cryppo.{DerivedKey, Rsa4096}
+  alias Cryppo.{DerivedKey, EncryptionKey, Rsa4096}
+
+  @corpus_of_tests "./test/compat.json"
 
   test "can decrypt a serialized encrypted value encrypted with Aes256Gcm by Ruby Cryppo" do
     {:ok, key} = Base.url_decode64("S5-0MiMs1jkg52bB9nzl1IoNYzxfSyxuoIx6Tvj2vCk=")
@@ -63,5 +65,181 @@ defmodule CompatTest do
     {:ok, signature} = Cryppo.load(serialized_signature)
 
     assert Rsa4096.verify(signature, public_key_erlang_tuple) == true
+  end
+
+  test "the corpus of serialized values" do
+    {:ok, json} = File.read(@corpus_of_tests)
+
+    {:ok,
+     %{
+       "encryption_with_key" => encryption_with_key,
+       "encryption_with_derived_key" => encryption_with_derived_key,
+       "signatures" => signatures
+     }} = Jason.decode(json)
+
+    encryption_with_key
+    |> Enum.map(fn %{
+                     "encryption_strategy" => encryption_strategy,
+                     "expected_decryption_result" => expected_decryption_result,
+                     "format" => _format,
+                     "key" => key,
+                     "serialized" => serialized
+                   } ->
+      encryption_key =
+        case encryption_strategy do
+          "Rsa4096" ->
+            {:ok, encryption_key} = Rsa4096.from_pem(key)
+            encryption_key
+
+          "Aes256Gcm" ->
+            {:ok, k} = Base.url_decode64(key)
+            EncryptionKey.new(k)
+        end
+
+      {:ok, encrypted_data} = serialized |> Cryppo.load()
+
+      {:ok, decrypted} = Cryppo.decrypt(encrypted_data, encryption_key)
+      assert decrypted == expected_decryption_result
+    end)
+
+    encryption_with_derived_key
+    |> Enum.map(fn %{
+                     "derivation_strategy" => _derivation_strategy,
+                     "encryption_strategy" => _encryption_strategy,
+                     "expected_decryption_result" => expected_decryption_result,
+                     "format" => _format,
+                     "passphrase" => passphrase,
+                     "serialized" => serialized
+                   } ->
+      {:ok, encrypted_data} = serialized |> Cryppo.load()
+
+      {:ok, decrypted, _key} = Cryppo.decrypt_with_derived_key(encrypted_data, passphrase)
+
+      assert decrypted == expected_decryption_result
+    end)
+
+    signatures
+    |> Enum.map(fn %{
+                     "public_pem" => public_pem,
+                     "serialized_signature" => serialized_signature
+                   } ->
+      {:ok, signature} = serialized_signature |> Cryppo.load()
+
+      assert Rsa4096.verify(signature, public_pem)
+    end)
+  end
+
+  # Use this to regenerate the corpus of tests ("./test/compat.json")
+  # test "generate a corpus of tests", do: generate_a_corpus_of_tests()
+
+  def generate_a_corpus_of_tests do
+    aes = "Aes256Gcm"
+    rsa = "Rsa4096"
+    pbkdf2hmac = "Pbkdf2Hmac"
+
+    cases = 30
+
+    sentences_to_encrypt = 0..cases |> Enum.map(fn _ -> Faker.Food.description() end)
+
+    encryption_with_key =
+      sentences_to_encrypt
+      |> Enum.flat_map(fn sentence ->
+        {encrypted_aes, key_aes} = Cryppo.encrypt(sentence, aes)
+        {encrypted_rsa, key_rsa} = Cryppo.encrypt(sentence, rsa)
+
+        {:ok, pem} = Cryppo.Rsa4096.to_pem(key_rsa)
+
+        key_aes_base64 = Base.url_encode64(key_aes.key, padding: true)
+
+        [
+          # AES
+          %{
+            serialized: Cryppo.serialize(encrypted_aes),
+            expected_decryption_result: sentence,
+            encryption_strategy: aes,
+            key: key_aes_base64,
+            format: "latest_version"
+          },
+          %{
+            serialized: Cryppo.serialize(encrypted_aes, version: :legacy),
+            expected_decryption_result: sentence,
+            encryption_strategy: aes,
+            key: key_aes_base64,
+            format: "legacy"
+          },
+          # RSA
+          %{
+            serialized: Cryppo.serialize(encrypted_rsa),
+            expected_decryption_result: sentence,
+            encryption_strategy: rsa,
+            key: pem,
+            format: "latest_version"
+          },
+          %{
+            serialized: Cryppo.serialize(encrypted_rsa, version: :legacy),
+            expected_decryption_result: sentence,
+            encryption_strategy: rsa,
+            key: pem,
+            format: "legacy"
+          }
+        ]
+      end)
+
+    encryption_with_derived_key =
+      sentences_to_encrypt
+      |> Enum.flat_map(fn sentence ->
+        passphrase =
+          Faker.Food.dish() <> " " <> Faker.Name.first_name() <> " " <> Faker.Name.last_name()
+
+        encrypted = Cryppo.encrypt_with_derived_key(sentence, aes, pbkdf2hmac, passphrase)
+
+        [
+          %{
+            serialized: Cryppo.serialize(encrypted),
+            expected_decryption_result: sentence,
+            encryption_strategy: aes,
+            derivation_strategy: pbkdf2hmac,
+            passphrase: passphrase,
+            format: "latest_version"
+          },
+          %{
+            serialized: Cryppo.serialize(encrypted, version: :legacy),
+            expected_decryption_result: sentence,
+            encryption_strategy: aes,
+            derivation_strategy: pbkdf2hmac,
+            passphrase: passphrase,
+            format: "legacy"
+          }
+        ]
+      end)
+
+    sentences_to_sign = sentences_to_encrypt
+
+    signatures =
+      sentences_to_sign
+      |> Enum.map(fn sentence ->
+        rsa_key = Cryppo.generate_encryption_key(rsa)
+
+        {:ok, public_pem} = rsa_key |> Rsa4096.private_key_to_public_key() |> Rsa4096.to_pem()
+
+        serialized_signature = sentence |> Rsa4096.sign(rsa_key) |> Cryppo.serialize()
+
+        %{
+          serialized_signature: serialized_signature,
+          public_pem: public_pem
+        }
+      end)
+
+    json =
+      %{
+        encryption_with_key: encryption_with_key,
+        encryption_with_derived_key: encryption_with_derived_key,
+        signatures: signatures
+      }
+      |> Jason.encode!(pretty: true)
+
+    {:ok, file} = File.open(@corpus_of_tests, [:write, :utf8])
+    IO.write(file, json)
+    :ok = File.close(file)
   end
 end

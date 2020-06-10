@@ -34,7 +34,9 @@ defmodule Cryppo.MixProject do
       {:credo, "~> 1.1.0", only: :dev},
       {:ex_cli, "~> 0.1.0"},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
+      {:faker, "~> 0.13", only: :test},
+      {:jason, "~> 1.0", only: [:test, :dev]}
     ]
   end
 
