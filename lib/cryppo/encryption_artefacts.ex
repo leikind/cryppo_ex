@@ -48,15 +48,19 @@ defmodule Cryppo.EncryptionArtefacts do
   end
 
   defp load_artefacts(<<@current_version::binary, bin::binary>>) do
-    with {:ok, %{"iv" => {0x0, iv}, "at" => {0x0, at}, "ad" => ad}} <- Cyanide.decode(bin) do
+    with {:ok, map} <- Cyanide.decode(bin) do
       {:ok,
        %__MODULE__{
-         initialization_vector: to_nil(iv),
-         authentication_tag: to_nil(at),
-         additional_authenticated_data: to_nil(ad)
+         initialization_vector: unwrap_bin(map["iv"]),
+         authentication_tag: unwrap_bin(map["at"]),
+         additional_authenticated_data: map["ad"]
        }}
     end
   end
+
+  defp unwrap_bin(nil), do: nil
+  defp unwrap_bin({0x0, ""}), do: nil
+  defp unwrap_bin({0x0, bin}), do: bin
 
   defp to_nil(""), do: nil
   defp to_nil(v), do: v
@@ -86,7 +90,16 @@ defmodule Cryppo.EncryptionArtefacts do
     end
 
     defp serialize_for_version({:latest_version, {iv, at, ad}}) do
-      with_wrapped_binaries = %{"iv" => wrap_bin(iv), "at" => wrap_bin(at), "ad" => ad}
+      with_wrapped_binaries =
+        if non_empty_string?(ad),
+          do: %{"ad" => ad},
+          else: %{}
+
+      with_wrapped_binaries =
+        [{"iv", iv}, {"at", at}]
+        |> Enum.filter(fn {_k, v} -> non_empty_string?(v) end)
+        |> Enum.map(fn {k, v} -> {k, wrap_bin(v)} end)
+        |> Enum.into(with_wrapped_binaries)
 
       with {:ok, bin} <- Cyanide.encode(with_wrapped_binaries) do
         with_version_prefix = <<EncryptionArtefacts.current_version()::binary, bin::binary>>
@@ -95,6 +108,8 @@ defmodule Cryppo.EncryptionArtefacts do
     end
 
     defp serialize_for_version({_, {_, _, _}}), do: {:error, :unrecognized_format}
+
+    defp non_empty_string?(s), do: is_binary(s) && s != ""
 
     # 0x0 is a marker for generic binary subtype in BSON
     # see http://bsonspec.org/spec.html

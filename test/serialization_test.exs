@@ -137,11 +137,11 @@ defmodule SerializationTest do
       assert loaded_encrypted_data.encrypted_data.encrypted_data ==
                encrypted_data.encrypted_data.encrypted_data
 
-      assert loaded_encrypted_data.encrypted_data.encryption_artefacts ==
-               encrypted_data.encrypted_data.encryption_artefacts
-
       assert loaded_encrypted_data.encrypted_data.encryption_strategy_module ==
                encrypted_data.encrypted_data.encryption_strategy_module
+
+      assert loaded_encrypted_data.encrypted_data.encryption_artefacts ==
+               encrypted_data.encrypted_data.encryption_artefacts
     end
 
     test "Legacy serialization format: encrypt with a derived key, serialize, load, encrypt with the derived key" do
