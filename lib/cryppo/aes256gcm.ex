@@ -8,7 +8,10 @@ defmodule Cryppo.Aes256gcm do
   # Auth tag length: 16 bytes.
   # AAD: "none"
 
-  use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
+  use Cryppo.EncryptionStrategy,
+    strategy_name: "Aes256Gcm",
+    key_derivation_possible: true
+
   alias Cryppo.Aes
 
   @erlang_crypto_cypher :aes_256_gcm

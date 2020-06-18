@@ -34,7 +34,10 @@ defmodule Cryppo.Rsa4096 do
   """
   @type pem() :: String.t()
 
-  use Cryppo.EncryptionStrategy, strategy_name: "Rsa4096"
+  use Cryppo.EncryptionStrategy,
+    strategy_name: "Rsa4096",
+    key_derivation_possible: false
+
   alias Cryppo.RsaSignature
 
   # 4096 is the key size in ruby Cryppo

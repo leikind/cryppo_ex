@@ -18,14 +18,20 @@ defmodule Cryppo.EncryptionStrategy do
   @callback decrypt(EncryptedData.t(), EncryptionKey.t()) ::
               {:ok, binary} | :decryption_error | {:decryption_error, {any, any}}
 
-  @spec __using__([{:strategy_name, binary}]) :: any
-  defmacro __using__(strategy_name: strategy_name) when is_binary(strategy_name) do
+  @callback key_derivation_possible :: boolean()
+
+  defmacro __using__(
+             strategy_name: strategy_name,
+             key_derivation_possible: key_derivation_possible
+           )
+           when is_binary(strategy_name) do
     [
       quote do
         alias Cryppo.{EncryptedData, EncryptionArtefacts, EncryptionKey, EncryptionStrategy}
         @behaviour EncryptionStrategy
       end,
       inject_strategy_name(strategy_name),
+      inject_key_derivation_possible(key_derivation_possible),
       inject_run_encryption(),
       inject_run_decryption()
     ]
@@ -35,6 +41,20 @@ defmodule Cryppo.EncryptionStrategy do
     quote do
       @impl EncryptionStrategy
       def strategy_name, do: unquote(strategy_name)
+    end
+  end
+
+  defp inject_key_derivation_possible(true) do
+    quote do
+      @impl EncryptionStrategy
+      def key_derivation_possible, do: true
+    end
+  end
+
+  defp inject_key_derivation_possible(false) do
+    quote do
+      @impl EncryptionStrategy
+      def key_derivation_possible, do: false
     end
   end
 

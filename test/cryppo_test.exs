@@ -216,6 +216,16 @@ defmodule CryppoTest do
     assert derived_key2.encryption_key, "key has been derived again"
   end
 
+  test "Trying to derive a key for an incompatible stategy" do
+    assert @plain_data
+           |> Cryppo.encrypt_with_derived_key("Aes128Ctr", "Pbkdf2Hmac", "my passphrase") ==
+             {:encryption_strategy_does_not_support_key_derivation, "Aes128Ctr"}
+
+    assert @plain_data
+           |> Cryppo.encrypt_with_derived_key("Rsa4096", "Pbkdf2Hmac", "my passphrase") ==
+             {:encryption_strategy_does_not_support_key_derivation, "Rsa4096"}
+  end
+
   test "Reusing a key already present in EncryptedDataWithDerivedKey" do
     encrypted_data =
       @plain_data |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "my passphrase")

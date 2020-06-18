@@ -7,7 +7,10 @@ defmodule Cryppo.Aes128ctr do
   # Key length: 16 bytes.
   # IV length: 16 bytes.
 
-  use Cryppo.EncryptionStrategy, strategy_name: "Aes128Ctr"
+  use Cryppo.EncryptionStrategy,
+    strategy_name: "Aes128Ctr",
+    key_derivation_possible: false
+
   alias Cryppo.Aes
 
   @erlang_crypto_cypher :aes_128_ctr

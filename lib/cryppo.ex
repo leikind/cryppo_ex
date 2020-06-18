@@ -151,26 +151,28 @@ defmodule Cryppo do
           EncryptedDataWithDerivedKey.t()
           | {:unsupported_encryption_strategy, encryption_strategy}
           | {:unsupported_key_derivation_strategy, encryption_strategy}
-  def encrypt_with_derived_key(
-        data,
-        encryption_strategy,
-        key_derivation_strategy,
-        passphrase
-      )
+  def encrypt_with_derived_key(data, encryption_strategy, key_derivation_strategy, passphrase)
       when is_binary(encryption_strategy) and is_binary(key_derivation_strategy) and
              is_binary(passphrase) and is_binary(data) do
     with {:ok, key_derivation_mod} <- find_key_derivation_strategy(key_derivation_strategy),
          {:ok, encryption_strategy_mod} <- find_strategy(encryption_strategy) do
-      %DerivedKey{encryption_key: key} =
-        derived_key = apply(key_derivation_mod, :generate_derived_key, [passphrase])
+      if apply(encryption_strategy_mod, :key_derivation_possible, []) do
+        %DerivedKey{encryption_key: key} =
+          derived_key = apply(key_derivation_mod, :generate_derived_key, [passphrase])
 
-      key_with_encryption_strategy = %{key | encryption_strategy_module: encryption_strategy_mod}
+        key_with_encryption_strategy = %{
+          key
+          | encryption_strategy_module: encryption_strategy_mod
+        }
 
-      %EncryptedData{} =
-        encrypted_data =
-        apply(encryption_strategy_mod, :run_encryption, [data, key_with_encryption_strategy])
+        %EncryptedData{} =
+          encrypted_data =
+          apply(encryption_strategy_mod, :run_encryption, [data, key_with_encryption_strategy])
 
-      %EncryptedDataWithDerivedKey{encrypted_data: encrypted_data, derived_key: derived_key}
+        %EncryptedDataWithDerivedKey{encrypted_data: encrypted_data, derived_key: derived_key}
+      else
+        {:encryption_strategy_does_not_support_key_derivation, encryption_strategy}
+      end
     end
   end
 
