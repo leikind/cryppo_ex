@@ -1,9 +1,13 @@
 defmodule Cryppo.Strategies do
   @moduledoc false
 
-  alias Cryppo.{Aes256gcm, Pbkdf2hmac, Rsa4096}
+  alias Cryppo.{Aes128ctr, Aes256gcm, Pbkdf2hmac, Rsa4096}
 
-  @encryption_strategies %{"Aes256Gcm" => Aes256gcm, "Rsa4096" => Rsa4096}
+  @encryption_strategies %{
+    "Aes256Gcm" => Aes256gcm,
+    "Rsa4096" => Rsa4096,
+    "Aes128Ctr" => Aes128ctr
+  }
   @derivation_strategies %{"Pbkdf2Hmac" => Pbkdf2hmac}
 
   @enc_strats_with_ok Enum.into(@encryption_strategies, %{}, fn {k, v} -> {k, {:ok, v}} end)

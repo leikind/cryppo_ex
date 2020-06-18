@@ -4,7 +4,7 @@ defmodule SerializationTest do
   alias Cryppo.{EncryptedData, EncryptedDataWithDerivedKey, Rsa4096}
 
   @plain_data "Hello world!"
-  @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
+  @all_encryption_strategies ["Rsa4096", "Aes256Gcm", "Aes128Ctr"]
 
   describe "with a generated key" do
     test "Legacy format: encrypt serialize, de-serialize, decrypt with aes_256_gcm" do

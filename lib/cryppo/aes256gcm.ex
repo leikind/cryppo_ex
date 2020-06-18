@@ -9,6 +9,7 @@ defmodule Cryppo.Aes256gcm do
   # AAD: "none"
 
   use Cryppo.EncryptionStrategy, strategy_name: "Aes256Gcm"
+  alias Cryppo.Aes
 
   @erlang_crypto_cypher :aes_256_gcm
 
@@ -24,9 +25,7 @@ defmodule Cryppo.Aes256gcm do
 
   @spec generate_key :: EncryptionKey.t()
   @impl EncryptionStrategy
-  def generate_key do
-    @key_length |> :crypto.strong_rand_bytes() |> EncryptionKey.new(__MODULE__)
-  end
+  def generate_key, do: Aes.generate_key(@key_length, __MODULE__)
 
   @spec encrypt(binary, EncryptionKey.t()) ::
           {:ok, binary, EncryptionArtefacts.t()} | :encryption_error
@@ -98,13 +97,8 @@ defmodule Cryppo.Aes256gcm do
     ErlangError -> :decryption_error
   end
 
+  @impl EncryptionStrategy
   @spec build_encryption_key(binary) ::
           {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
-  @impl EncryptionStrategy
-  def build_encryption_key(raw_key) when is_binary(raw_key) do
-    key = EncryptionKey.new(raw_key, __MODULE__)
-    {:ok, key}
-  end
-
-  def build_encryption_key(_), do: {:error, :invalid_encryption_key}
+  def build_encryption_key(raw_key), do: Aes.build_encryption_key(raw_key, __MODULE__)
 end

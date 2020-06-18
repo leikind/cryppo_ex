@@ -5,12 +5,12 @@ defmodule CryppoTest do
 
   doctest Cryppo
 
-  @all_encryption_strategies ["Rsa4096", "Aes256Gcm"]
+  @all_encryption_strategies ["Rsa4096", "Aes256Gcm", "Aes128Ctr"]
 
   @plain_data "Hello world!"
 
   test "Cryppo.encryption_strategies" do
-    assert Cryppo.encryption_strategies() == ["Aes256Gcm", "Rsa4096"]
+    assert Cryppo.encryption_strategies() == ["Aes128Ctr", "Aes256Gcm", "Rsa4096"]
   end
 
   test "Cryppo.derivation_strategies" do
@@ -65,7 +65,7 @@ defmodule CryppoTest do
     end
 
     test "Encryption / decryption using raw keys, not EncryptionKey structs" do
-      for encryption_strategy <- ["Rsa4096", "Aes256Gcm"] do
+      for encryption_strategy <- @all_encryption_strategies do
         key = Cryppo.generate_encryption_key(encryption_strategy)
         raw_key = key.key
 
@@ -115,7 +115,7 @@ defmodule CryppoTest do
     end
 
     test "Decrypting using the wrong key of the same strategy" do
-      for encryption_strategy <- @all_encryption_strategies do
+      for encryption_strategy <- ["Rsa4096", "Aes256Gcm"] do
         key = Cryppo.generate_encryption_key(encryption_strategy)
         wrong_key = Cryppo.generate_encryption_key(encryption_strategy)
 
