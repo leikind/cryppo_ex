@@ -6,6 +6,7 @@ defmodule CryppoTest do
   doctest Cryppo
 
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm", "Aes128Ctr"]
+  @encryption_strategies_supporting_key_derivation ["Aes256Gcm", "Aes128Ctr"]
 
   @plain_data "Hello world!"
 
@@ -186,41 +187,39 @@ defmodule CryppoTest do
     end
   end
 
-  test "Encryption / decryption with a derived key" do
-    encrypted_data =
-      @plain_data
-      |> Cryppo.encrypt_with_derived_key(
-        "Aes256Gcm",
-        "Pbkdf2Hmac",
-        "my passphrase"
-      )
+  test "Encryption / decryption with a derived key with Aes256Gcm" do
+    for encryption_strategy <- @encryption_strategies_supporting_key_derivation do
+      encrypted_data =
+        @plain_data
+        |> Cryppo.encrypt_with_derived_key(
+          encryption_strategy,
+          "Pbkdf2Hmac",
+          "my passphrase"
+        )
 
-    assert(encrypted_data)
+      assert(encrypted_data)
 
-    assert %EncryptedDataWithDerivedKey{} = encrypted_data,
-           "encrypted_data is a EncryptedDataWithDerivedKey struct"
+      assert %EncryptedDataWithDerivedKey{} = encrypted_data,
+             "encrypted_data is a EncryptedDataWithDerivedKey struct"
 
-    encrypted_data_without_key = %{
-      encrypted_data
-      | derived_key: %{encrypted_data.derived_key | encryption_key: nil}
-    }
+      encrypted_data_without_key = %{
+        encrypted_data
+        | derived_key: %{encrypted_data.derived_key | encryption_key: nil}
+      }
 
-    assert encrypted_data_without_key.derived_key.encryption_key == nil,
-           "encrypted_data struct contains no key"
+      assert encrypted_data_without_key.derived_key.encryption_key == nil,
+             "encrypted_data struct contains no key"
 
-    {:ok, decrypted, derived_key2} =
-      Cryppo.decrypt_with_derived_key(encrypted_data, "my passphrase")
+      {:ok, decrypted, derived_key2} =
+        Cryppo.decrypt_with_derived_key(encrypted_data, "my passphrase")
 
-    assert @plain_data == decrypted
+      assert @plain_data == decrypted
 
-    assert derived_key2.encryption_key, "key has been derived again"
+      assert derived_key2.encryption_key, "key has been derived again"
+    end
   end
 
   test "Trying to derive a key for an incompatible stategy" do
-    assert @plain_data
-           |> Cryppo.encrypt_with_derived_key("Aes128Ctr", "Pbkdf2Hmac", "my passphrase") ==
-             {:encryption_strategy_does_not_support_key_derivation, "Aes128Ctr"}
-
     assert @plain_data
            |> Cryppo.encrypt_with_derived_key("Rsa4096", "Pbkdf2Hmac", "my passphrase") ==
              {:encryption_strategy_does_not_support_key_derivation, "Rsa4096"}

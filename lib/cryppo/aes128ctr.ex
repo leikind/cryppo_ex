@@ -10,7 +10,7 @@ defmodule Cryppo.Aes128ctr do
   use Cryppo.EncryptionStrategy,
     strategy_name: "Aes128Ctr",
     key_length: 16,
-    key_derivation_possible: false
+    key_derivation_possible: true
 
   alias Cryppo.Aes
 
