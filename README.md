@@ -11,9 +11,17 @@ and [public_key](https://erlang.org/doc/man/public_key.html) under the hood.
 
 ## Installation
 
-TODO
+Add `cryppo_ex` as a dependency in your `mix.exs`:
 
-Not released on [hex.pm](https://hex.pm) yet.
+```elixir
+def deps do
+  [
+    {:xlsx_reader, "~> 0.1"}
+  ]
+end
+```
+
+Run `mix deps.get` to fetch CryppoEx.
 
 ## Encrypt and decrypt data using a derived key
 
