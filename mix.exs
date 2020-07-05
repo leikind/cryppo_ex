@@ -28,15 +28,15 @@ defmodule Cryppo.MixProject do
 
   defp deps do
     [
-      {:pbkdf2, "~> 2.0"},
-      {:yamerl, "~> 0.8"},
-      {:cyanide, "~> 1.0.0"},
-      {:credo, "~> 1.1.0", only: :dev},
-      {:ex_cli, "~> 0.1.0"},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      {:faker, "~> 0.13", only: :test},
-      {:jason, "~> 1.0", only: [:test, :dev]}
+      {:pbkdf2, ">= 2.0.0"},
+      {:yamerl, ">= 0.8.0"},
+      {:cyanide, ">= 1.0.0"},
+      {:credo, ">= 1.1.0", only: :dev},
+      {:ex_cli, ">= 0.1.0"},
+      {:ex_doc, ">= 0.21.0", only: :dev, runtime: false},
+      {:dialyxir, ">= 1.0.0", only: :dev, runtime: false},
+      {:faker, ">= 0.13.0", only: :test},
+      {:jason, ">= 1.0.0", only: [:test, :dev]}
     ]
   end
 
