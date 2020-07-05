@@ -7,6 +7,8 @@ defmodule Cryppo.EncryptionStrategy do
 
   @callback strategy_name :: binary
 
+  @callback key_length :: integer()
+
   @callback generate_key :: EncryptionKey.t()
 
   @callback build_encryption_key(any) ::
@@ -22,6 +24,7 @@ defmodule Cryppo.EncryptionStrategy do
 
   defmacro __using__(
              strategy_name: strategy_name,
+             key_length: key_length,
              key_derivation_possible: key_derivation_possible
            )
            when is_binary(strategy_name) do
@@ -31,6 +34,7 @@ defmodule Cryppo.EncryptionStrategy do
         @behaviour EncryptionStrategy
       end,
       inject_strategy_name(strategy_name),
+      inject_key_length(key_length),
       inject_key_derivation_possible(key_derivation_possible),
       inject_run_encryption(),
       inject_run_decryption()
@@ -41,6 +45,14 @@ defmodule Cryppo.EncryptionStrategy do
     quote do
       @impl EncryptionStrategy
       def strategy_name, do: unquote(strategy_name)
+    end
+  end
+
+  defp inject_key_length(key_length) do
+    quote do
+      @spec key_length :: integer()
+      @impl EncryptionStrategy
+      def key_length, do: unquote(key_length)
     end
   end
 

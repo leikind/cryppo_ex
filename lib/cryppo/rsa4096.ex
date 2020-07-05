@@ -36,12 +36,12 @@ defmodule Cryppo.Rsa4096 do
 
   use Cryppo.EncryptionStrategy,
     strategy_name: "Rsa4096",
+    # 4096 is the key size in ruby Cryppo
+    key_length: 4_096,
     key_derivation_possible: false
 
   alias Cryppo.RsaSignature
 
-  # 4096 is the key size in ruby Cryppo
-  @size 4_096
   # 65537 is the default in OpenSSL, and hence in ruby Cryppo
   @exponent 65_537
 
@@ -51,7 +51,7 @@ defmodule Cryppo.Rsa4096 do
   @spec generate_key :: EncryptionKey.t()
   @impl true
   def generate_key do
-    {:rsa, @size, @exponent}
+    {:rsa, key_length(), @exponent}
     |> :public_key.generate_key()
     |> EncryptionKey.new(__MODULE__)
   end

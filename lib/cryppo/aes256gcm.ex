@@ -10,13 +10,12 @@ defmodule Cryppo.Aes256gcm do
 
   use Cryppo.EncryptionStrategy,
     strategy_name: "Aes256Gcm",
+    key_length: 32,
     key_derivation_possible: true
 
   alias Cryppo.Aes
 
   @erlang_crypto_cypher :aes_256_gcm
-
-  @key_length 32
 
   # OpenSSL::Cipher::AES.new(256, :GCM).iv_len return 12 in Ruby
   @iv_byte_size 12
@@ -28,7 +27,7 @@ defmodule Cryppo.Aes256gcm do
 
   @spec generate_key :: EncryptionKey.t()
   @impl EncryptionStrategy
-  def generate_key, do: Aes.generate_key(@key_length, __MODULE__)
+  def generate_key, do: key_length() |> Aes.generate_key(__MODULE__)
 
   @spec encrypt(binary, EncryptionKey.t()) ::
           {:ok, binary, EncryptionArtefacts.t()} | :encryption_error

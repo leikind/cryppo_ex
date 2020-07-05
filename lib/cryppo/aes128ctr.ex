@@ -9,18 +9,17 @@ defmodule Cryppo.Aes128ctr do
 
   use Cryppo.EncryptionStrategy,
     strategy_name: "Aes128Ctr",
+    key_length: 16,
     key_derivation_possible: false
 
   alias Cryppo.Aes
 
   @erlang_crypto_cypher :aes_128_ctr
-
-  @key_length 16
   @iv_byte_size 16
 
   @spec generate_key :: EncryptionKey.t()
   @impl EncryptionStrategy
-  def generate_key, do: Aes.generate_key(@key_length, __MODULE__)
+  def generate_key, do: key_length() |> Aes.generate_key(__MODULE__)
 
   @spec encrypt(binary, EncryptionKey.t()) ::
           {:ok, binary, EncryptionArtefacts.t()} | :encryption_error
