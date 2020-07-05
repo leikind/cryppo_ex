@@ -157,8 +157,10 @@ defmodule Cryppo do
     with {:ok, key_derivation_mod} <- find_key_derivation_strategy(key_derivation_strategy),
          {:ok, encryption_strategy_mod} <- find_strategy(encryption_strategy) do
       if apply(encryption_strategy_mod, :key_derivation_possible, []) do
+        key_length = apply(encryption_strategy_mod, :key_length, [])
+
         %DerivedKey{encryption_key: key} =
-          derived_key = apply(key_derivation_mod, :generate_derived_key, [passphrase])
+          derived_key = apply(key_derivation_mod, :generate_derived_key, [passphrase, key_length])
 
         key_with_encryption_strategy = %{
           key

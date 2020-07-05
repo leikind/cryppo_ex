@@ -15,7 +15,6 @@ defmodule Cryppo.Pbkdf2hmac do
   @variance (@min_iterations * (@iteration_variance / 100.0)) |> trunc
 
   @salt_length 20
-  @key_length 32
 
   @on_load :init_random_number_generation
 
@@ -29,12 +28,12 @@ defmodule Cryppo.Pbkdf2hmac do
   @spec hash_function :: binary
   def hash_function, do: "SHA256"
 
-  @spec generate_derived_key(String.t()) :: DerivedKey.t()
+  @spec generate_derived_key(String.t(), integer()) :: DerivedKey.t()
   @impl DerivationStrategy
-  def generate_derived_key(passphrase) do
+  def generate_derived_key(passphrase, key_length) do
     salt = make_salt()
     iterations = make_iterations()
-    passphrase |> derive_and_build_derived_key(salt, iterations, @key_length)
+    passphrase |> derive_and_build_derived_key(salt, iterations, key_length)
   end
 
   @spec build_derived_key(String.t(), DerivedKey.t()) :: DerivedKey.t()

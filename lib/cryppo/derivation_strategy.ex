@@ -6,7 +6,7 @@ defmodule Cryppo.DerivationStrategy do
   alias Cryppo.DerivedKey
 
   @callback strategy_name :: binary
-  @callback generate_derived_key(String.t()) :: DerivedKey.t()
+  @callback generate_derived_key(String.t(), integer()) :: DerivedKey.t()
   @callback build_derived_key(String.t(), DerivedKey.t()) :: DerivedKey.t()
 
   @spec __using__([{:strategy_name, binary}]) :: any
