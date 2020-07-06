@@ -16,15 +16,6 @@ defmodule Cryppo.Pbkdf2hmac do
 
   @salt_length 20
 
-  @on_load :init_random_number_generation
-
-  @spec init_random_number_generation :: :ok
-  def init_random_number_generation do
-    # https://erlang.org/doc/man/crypto.html#rand_seed-0
-    :crypto.rand_seed()
-    :ok
-  end
-
   @spec hash_function :: binary
   def hash_function, do: "SHA256"
 
