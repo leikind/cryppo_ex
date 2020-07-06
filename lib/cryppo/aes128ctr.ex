@@ -27,11 +27,13 @@ defmodule Cryppo.Aes128ctr do
   def encrypt(data, %EncryptionKey{key: key}) when is_binary(data) and is_binary(key) do
     iv = :crypto.strong_rand_bytes(@iv_byte_size)
 
-    cipher =
+    encrypted =
       @erlang_crypto_cypher
       |> :crypto.crypto_init(key, iv, true)
+      |> :crypto.crypto_update(data)
 
-    encrypted = :crypto.crypto_update(cipher, data) <> :crypto.crypto_final(cipher)
+    # present from OTP 23. What do we do with it?
+    # :crypto.crypto_final
 
     {:ok, encrypted, %EncryptionArtefacts{initialization_vector: iv}}
   end
@@ -49,11 +51,13 @@ defmodule Cryppo.Aes128ctr do
         %EncryptionKey{key: key}
       )
       when is_binary(encrypted_data) and is_binary(key) do
-    cipher =
+    decrypted =
       @erlang_crypto_cypher
       |> :crypto.crypto_init(key, iv, false)
+      |> :crypto.crypto_update(encrypted_data)
 
-    decrypted = :crypto.crypto_update(cipher, encrypted_data) <> :crypto.crypto_final(cipher)
+    # present from OTP 23. What do we do with it?
+    # :crypto.crypto_final
 
     {:ok, decrypted}
   end
