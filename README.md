@@ -16,7 +16,7 @@ Add `cryppo_ex` as a dependency in your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:xlsx_reader, "~> 0.1"}
+    {:cryppo_ex, "~> 0.1"}
   ]
 end
 ```
