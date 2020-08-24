@@ -285,9 +285,14 @@ defmodule Cryppo do
       iex> s = "Sign.Rsa4096.V4JbRzpkud-3cHCGqDwGjS3TmRto5Te0iSAtD7oIzsDa83McBDYpU_eeswVZF9AGEvoAEQOCwpqJ_PgbjHKT2nHgLysK-btG6Nxk_K2J7A6Uq15X5QrOgIKTzC00dj1tzAN73u9lsRPKIfwPyp_Mlb6FNs1LoB7OvAusit6QPm8iAwHo4nOWBBUf3hO9b3gsWJ92FxnBsCLYFQj_zv4mnLHj7pDNVtq9Kp4hK6bgcIH4FZtyDKDr6bXEtlCGLDIY10UqNLylkagI36Gyafm-HnD57vRxjgHIGEsd2XcwDJ8PqqrzSYNxl-RyWD3wq0nXE_1rYJ7k1AKLM5G1Hg8B2whqcXpQ52x3zVFCAjlU9GNhT6pdUBxQYw09va7fe2w517PrwwMe90MW87fj3G7dGEKT95cDLTx1d84ybIUFUJOGKY0FF4LL0E3UqWQ92kU4bh-DSTkNmgItX34fiBIOpQDbF238IkRYyFA8LfMPfL-0_dnto9sH0E3Umi41qFvpA2Nq8r57FF4vCOSkXYWVfyitOkY_URqMLxS57azwZRBehJYDtvbqmzaYEDceeLjkxDi--Y10LT4Cz2SGiU--YDJM66PZ3Cp74gvDpsWlohcwYmMib5LrjdtvLOAtOZhoLZyGeeX0lDnwOum7lFRpJd8UIrOlTvpBo48ep2bpmgA=.VmVyaMO8dHVuZyB2ZXJib3Rlbg=="
       iex> {:ok, %Cryppo.RsaSignature{}} = Cryppo.load(s)
   """
-  @spec load(String.t()) ::
+  @spec load(binary) ::
           {:ok, EncryptedDataWithDerivedKey.t() | EncryptedData.t() | RsaSignature.t()}
-          | {:error, :invalid_yaml, :invalid_bson, :invalid_base64, :invalid_derivation_artefacts}
+          | {:error,
+             :invalid_base64
+             | :invalid_bson
+             | :invalid_derivation_artefacts
+             | :invalid_serialization_value
+             | :invalid_yaml}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}
   def load(serialized) when is_binary(serialized) do
