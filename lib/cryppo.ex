@@ -3,6 +3,8 @@ defmodule Cryppo do
     Main public API of Cryppo
   """
 
+  import Cryppo.Strategies, only: [find_strategy: 1, find_key_derivation_strategy: 1]
+
   alias Cryppo.{
     DerivedKey,
     EncryptedData,
@@ -12,8 +14,6 @@ defmodule Cryppo do
     Serialization,
     Strategies
   }
-
-  import Strategies, only: [find_strategy: 1, find_key_derivation_strategy: 1]
 
   @typedoc """
   Name of an encryption or derivation strategy

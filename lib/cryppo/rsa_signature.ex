@@ -3,8 +3,8 @@ defmodule Cryppo.RsaSignature do
   A struct for an RSA singature and the signed data
   """
 
-  alias Cryppo.{RsaSignature, Serialization}
   import Cryppo.Base64
+  alias Cryppo.{RsaSignature, Serialization}
 
   @typedoc """
   Struct `Cryppo.RsaSignature`

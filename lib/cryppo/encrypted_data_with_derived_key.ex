@@ -3,10 +3,9 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
   A struct for a derived key and data encrypted with this derived key
   """
 
-  alias Cryppo.{DerivedKey, EncryptedData, EncryptedDataWithDerivedKey, Serialization}
-
   import Cryppo.Base64
   import Cryppo.Strategies, only: [find_key_derivation_strategy: 1]
+  alias Cryppo.{DerivedKey, EncryptedData, EncryptedDataWithDerivedKey, Serialization}
 
   @typedoc """
   Struct `Cryppo.EncryptedData`

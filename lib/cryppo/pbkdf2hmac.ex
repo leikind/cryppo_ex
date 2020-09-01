@@ -12,6 +12,7 @@ defmodule Cryppo.Pbkdf2hmac do
 
   @min_iterations 20_000
   @iteration_variance 10
+  # credo:disable-for-next-line
   @variance (@min_iterations * (@iteration_variance / 100.0)) |> trunc
 
   @salt_length 20

@@ -11,6 +11,14 @@ defmodule Cryppo.Rsa4096 do
   # Exponents: 65537
   # Padding: rsa_pkcs1_oaep_padding
 
+  use Cryppo.EncryptionStrategy,
+    strategy_name: "Rsa4096",
+    # 4096 is the key size in ruby Cryppo
+    key_length: 4_096,
+    key_derivation_possible: false
+
+  alias Cryppo.RsaSignature
+
   @typedoc """
   Erlang type for RSA private keys
 
@@ -33,14 +41,6 @@ defmodule Cryppo.Rsa4096 do
   RSA keys in PEM format
   """
   @type pem() :: String.t()
-
-  use Cryppo.EncryptionStrategy,
-    strategy_name: "Rsa4096",
-    # 4096 is the key size in ruby Cryppo
-    key_length: 4_096,
-    key_derivation_possible: false
-
-  alias Cryppo.RsaSignature
 
   # 65537 is the default in OpenSSL, and hence in ruby Cryppo
   @exponent 65_537

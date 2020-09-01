@@ -8,10 +8,9 @@ defmodule Cryppo.EncryptedData do
   Can also contain encryption artefacts if they are part of the  encryption strategy.
   """
 
-  alias Cryppo.{EncryptedData, EncryptionArtefacts, Serialization}
-
   import Cryppo.Base64
   import Cryppo.Strategies, only: [find_strategy: 1]
+  alias Cryppo.{EncryptedData, EncryptionArtefacts, Serialization}
 
   @typedoc """
   Struct `Cryppo.EncryptedData`

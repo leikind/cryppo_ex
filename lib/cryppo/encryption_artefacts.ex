@@ -6,8 +6,8 @@ defmodule Cryppo.EncryptionArtefacts do
   makes sense for the underlying cipher.
   """
 
-  alias Cryppo.{EncryptionArtefacts, Serialization, Yaml}
   import Cryppo.Base64
+  alias Cryppo.{EncryptionArtefacts, Serialization, Yaml}
 
   @typedoc "Struct `Cryppo.EncryptionArtefacts`"
 
