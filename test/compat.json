@@ -495,9 +495,39 @@
       "format": "legacy",
       "passphrase": "Califlower penne Jaylan Schowalter",
       "serialized": "Aes256Gcm.Y9s59jH1EftH2LPkGAeIt-c7YU6937ab8xcvVCvjzoFtwFDrWweHaHBHbh14XG38vFaRYchck1G0YWsLe8xhZxxAL8R1uEZmq0rmH2Gf2ZwlOIQCa3ODeQ2IPHaxxcnoCS3npm4ubwYDtciPSm-Iwoc3lTPdKoz7Adrya28c_jtrWFFjqhcYCdj6KawjwfEPfI53RP0QLvQl4xHXdGmc68wCxfgzmh2DA76JxnQKtpYWYGqh0JU=.LS0tCidhZCc6IG5vbmUKJ2F0JzogISFiaW5hcnkgfC0KICAzdjd2NFJjN0g2L05mK2hVdFNnZExBPT0KJ2l2JzogISFiaW5hcnkgfC0KICBUVzFld0dCQUFFRHRWVXMyCg==.Pbkdf2Hmac.LS0tCidpJzogMjEwMDkKJ2l2JzogISFiaW5hcnkgfC0KICBmZTg2YkhyRjROSmd1bkJtQVlUa0dOTW1nOFE9CidsJzogMzIK"
+    },
+    {
+      "derivation_strategy": "Pbkdf2Hmac",
+      "encryption_strategy": "Aes256Gcm",
+      "expected_decryption_result": "ܑ񵿁R冎𵵖HخGؼ𝕖ƶ򠈛#؉�櫙㢍̇扑󺥈揥񠥥C񫉫𐣚ˏϹ끣Ϧ{󘕌󶨇󫊶ᣏ܊㋅i͸񦉑s蹇ҏ)6Ǉ𺘘ⶴ襰Յ󠪐쵏q;kbͥ%T껕̶ݸh齉͌.瘟D־'򆷦ɍéʛڴʼǭ񤻲j򑶭",
+      "format": "latest_version",
+      "passphrase": "Califlower penne Jaylan Schowalter",
+      "serialized": "Aes256Gcm.yJV55ziAz1FJKzgizs9a4FxPfdZHWtpd0ZW38NCttZUUp1wtRPYK-wXeUXz6ba-KFgHWZpb7CcDPKQ7RhP3X7oQokAyI_XNiDKkDnVRdmNMeHsLa4ImXYaC7ayPNJOrO5G3cAkOwBh3O7wZg42wdMVowZcV5m5puIOd_GtZmhvtywQLYklvIY5i8JzUUBS3m-Dy7MJmTHHhBtw62VZKGhdJwC8I9n-VAGIfgp6khne8h4vbD46_aTBeptLrBBQ==.QUAAAAAFaXYADAAAAAAYnkX6m2hA9lAxiWoFYXQAEAAAAADIJTVr6qyB6xV0bz1F-jUEAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAACngN20mBgR3muNqHKH5GuUMQrJVhBpAGtRAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA"
+    },
+    {
+      "derivation_strategy": "Pbkdf2Hmac",
+      "encryption_strategy": "Aes256Gcm",
+      "expected_decryption_result": "ܑ񵿁R冎𵵖HخGؼ𝕖ƶ򠈛#؉�櫙㢍̇扑󺥈揥񠥥C񫉫𐣚ˏϹ끣Ϧ{󘕌󶨇󫊶ᣏ܊㋅i͸񦉑s蹇ҏ)6Ǉ𺘘ⶴ襰Յ󠪐쵏q;kbͥ%T껕̶ݸh齉͌.瘟D־'򆷦ɍéʛڴʼǭ񤻲j򑶭",
+      "format": "legacy",
+      "passphrase": "Califlower penne Jaylan Schowalter",
+      "serialized": "Aes256Gcm.qGEE3kLdWZbFkV2_eAzorkVHNUC_tbMfdkB8Fk4NjALmJQ0Ngv5_ngAXAuPJDJLVrU3LEFQ8l8wuFtcwhL-8si9RLSXfmzuk7tXAxWVSCRM0z5JSbFUF_OwwFWPPQal8pJJG_d-GKOojgi1jd-_DXkkPOM3adP6nK1ao9vOegeVfdQYmRqv7biJbZAZTUJUaR-ylCMRlwfTyzjz3XmgkbZWQRseKDjZpVu4_cw4QoMWTztTTdPxH59ZjbYoD-A==.LS0tCml2OiAhYmluYXJ5IHwtCiAgSW01WW1aTDhJUVVRS056ZgphdDogIWJpbmFyeSB8LQogIGRleHBaMG8zbjVoQjA0ZUMydG1qdUE9PQphZDogbm9uZQo=.Pbkdf2Hmac.LS0tCml2OiAhYmluYXJ5IHwtCiAgZ1JnZjM2U0FGd2Q1TXUyL2hzNmJ0cnRmd3RJPQppOiAyMDcyOQpsOiAzMgpoYXNoOiBTSEEyNTYK"
     }
   ],
   "encryption_with_key": [
+    {
+      "encryption_strategy": "Aes256Gcm",
+      "expected_decryption_result": "ܑ񵿁R冎𵵖HخGؼ𝕖ƶ򠈛#؉�櫙㢍̇扑󺥈揥񠥥C񫉫𐣚ˏϹ끣Ϧ{󘕌󶨇󫊶ᣏ܊㋅i͸񦉑s蹇ҏ)6Ǉ𺘘ⶴ襰Յ󠪐쵏q;kbͥ%T껕̶ݸh齉͌.瘟D־'򆷦ɍéʛڴʼǭ񤻲j򑶭",
+      "format": "latest_version",
+      "key": "sfB3gwp8bJ41-cIBS3lPf5QdO6jzOYT2W_33lOzy2fc=",
+      "serialized": "Aes256Gcm.w8IquaPPZH4p0gUvzLikE2_hkWkz3pFSb8VFGC3YjRtfn9cDMhsY3SHBjnpbYSr-u-Hx9-_990A1Lx9_Nqm6p9SbsjZvFMdf5uMySD6wOfSKk6otbMjPo1sWo9733ICYZlsjks3M2DlyNT8ABGhR8biSMig_EjCIdRoZeTIx3NHWngbm2R5F7WI9mxRSPisQW_HMnAQhMGJAtecoDUXAQxgNsfbZt9fj-gPr3_e6wXH_pBAFPIuz2jrr7-AvJA==.QUAAAAAFaXYADAAAAAAjOxPi_KZkpHuUl0kFYXQAEAAAAAD3bK0klvJ6TVrqgXtEkO6JAmFkAAUAAABub25lAAA="
+    },
+    {
+      "encryption_strategy": "Aes256Gcm",
+      "expected_decryption_result": "ܑ񵿁R冎𵵖HخGؼ𝕖ƶ򠈛#؉�櫙㢍̇扑󺥈揥񠥥C񫉫𐣚ˏϹ끣Ϧ{󘕌󶨇󫊶ᣏ܊㋅i͸񦉑s蹇ҏ)6Ǉ𺘘ⶴ襰Յ󠪐쵏q;kbͥ%T껕̶ݸh齉͌.瘟D־'򆷦ɍéʛڴʼǭ񤻲j򑶭",
+      "format": "legacy",
+      "key": "sfB3gwp8bJ41-cIBS3lPf5QdO6jzOYT2W_33lOzy2fc=",
+      "serialized": "Aes256Gcm.IYnQwVKsjMGDkP79H3vxysCho4hFUVPF6dax1RIdfEf-knrocTEQrBBAKgevU-D60ofemS1oWki-AzdoQOeSyD1MDZ0oW7-xzqUe4_ZCWaXdlC6u3i0o5pK9lsY26u2pNFq0K9Vt7TGw9mhl7WmISGT2AM1Zu0hfzih9FJEXBg9bjVvCe5rU2Dl76Gs9MY0SXpwlbmdLCTE6Xuy9Nr6zsH-OhvsZSKSIZdCphIEzdyq9ZI6FQ-SuAkO2oh74vw==.LS0tCml2OiAhYmluYXJ5IHwtCiAgN29JSzN1MGVTTFhTN0JhVwphdDogIWJpbmFyeSB8LQogIFZoVmtScFJVeENwWlp4R01hdDFKQ0E9PQphZDogbm9uZQo="
+    },
     {
       "encryption_strategy": "Aes256Gcm",
       "expected_decryption_result": "Fresh Norwegian salmon, lightly brushed with our herbed Dijon mustard sauce, with choice of two sides.",
@@ -1368,6 +1398,10 @@
     }
   ],
   "signatures": [
+    {
+      "public_pem": "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuAR92EvqcsiYScV/bQWU\nQpHmfr6kLVmZeQQFO9B/rMN32UdKu05JYovPnnAXv/ul8XJtejKZTiscvm/tucX/\nrZlcKD+n3eVNu6aS4UQHidFvl0FM5s8Uq15lQIyImcL2K+r2O8sZa1TMoAp058F2\n6bDv+RQoDdOxSzUKL3RlbE+J0QQNvn1d9toHNVphcTcBl1HIiJQGedfbPiNIXxKU\ntUwJlUxYbE/P8rfuU1+EC0tMicQIeS9w6fZ/LF+rI+D9SpKqdfzqiVGW4RuWeC/E\nwOfXpfv/WgsDE0+SUtCbBGhVm9eIDfQCXXjxBaJbOA7+ffUyMXKpcJLAwIXhgqQH\ndOXVZ8XfD5gs/zDxQYj2tKHTuFIUnNu8VIqmVPOXU/sUcf9dkfDXNgcBHVyVUeMT\noCvXnJElNtT5cPcanzFcpm1KJP/g1HmEsit+HzrLWmf9ZFD8l3aEr7nXtb+WffH6\nYuGMs/KKlbWyFtD1NM9iCHkFzggh1QUaXdNv7docVuIUf8yuiyRF7v84VgeqADBl\niXuhGITWLDmzbUUM8xDKofuzMaOtuL569fY2tYS/4/Fu4Yazzj9tsDf7M9cgDTBf\nfdqdsgj3Kb3EH/uhCEMbZY/jhXLY51aYi94QW9QkfgBp8xgM1xY5GY+wd8aWpZqO\n+16QIshUdx5tdBQMGbauZx0CAwEAAQ==\n-----END PUBLIC KEY-----\n\n",
+      "serialized_signature": "Sign.Rsa4096.oaLYFwgk9qWP2G8n3GdmPlmNICtAz-oF2v-byW5WM729dD0sTN4oWFGsGQHy9WadQg5tOgsibz1ENtYMqn-Lhyu7NRBrDpfsclWNq473YUeWmrMh76WEqU8zB4pz4Jn10AfIMal2tHEUZFjPdsrCwFbay1ZBeVx6hnJ6YOHiAuQbHDB6SiDE874EN8rnCGtwDAcyUSR-4Cpq5BNeaqyFKJ1fH754KLGIEHFhYkDcf0MrV7cYq0E5kwUZdA9csdABkPJUwejWiaMY3WQ3jjl48a8BopaJ3EeSBxx0A7E7JUfLOmhR1MFK79CYgxTXGXzTmu3BxHB5EQNY4ZJK44ORrH3dN2-CJbAGnGMe5886z0PDD2n-mCCkpg02ilhiwneX-40zOYQrW40k67yFcj-djx98URkhuhCIGNcOiXMuV-yqsKjEQIcN_4DjIfLYdSMvxNvtEcVDSxTFsVnQgwtU1Nt6-u0yQxoTrQVd6SS1teYXi6h5E9lTKcTEgpI5hx5tcvYSP14wROGukU7GinSbOrs6oaw9B6Cxd0ZB5nQ9XHl5unJV7IXKdDEwUaxfFutGzC-pbRm4aKoDTNX-BlgByliWJeGxwPYtXsuKR1s7RaE1_rs0qxJYLeOfd5-LCOstDrt1VBK1gz5ZPz9xKkGz4BLaimc6pifkFuKnCOmtptU=.3JHxtb-BUuWGjvC1tZZI2K5H2LzwnZWWxrbyoIibI9iJ77-95quZ46KNzIfmiZHzuqWI5o-l8aClpUPxq4mr8JCjmsuPz7nrgaPPpnvzmJWM87aoh_Orirbho4_ciuOLhWnNuPGmiZFz6LmH0o8pNseH8LqYmOK2tOilsNWF86CqkOy1j3E7a2LNpSVU6ruVzLbduGjpvYnut6LNjC7nmJ9E1r4n8oa3psmNw6nKm9q0yrzHrfGku7Jq8pG2rQ=="
+    },
     {
       "public_pem": "-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEA+8MiV5iL8XCvOIgAg4Sxb/LAiQglhAJ5ogAo8wH9utjVWxmDCuFb\n+DRsT7kVvtE5zuf7cYL4m1DX1Gfyyr0LlVpgUzFBsnpmZJmaebK3Nab5+9xnRmIf\nSaDRtnVqryCHwUrONVxUghXfbh9Lq3Ru0IU7+QuP8J+ey4wgJKKM0gDN8y1FotMf\nO3h/Wa/xC0Qd4dizaIlHvgGwoF2P2+5dB7kDJ4lAJK1Sjt+Ybr3lXaFDOUbgnu/0\nuHKKtD+4nCGc4GolvnIK2+Tt5kjQ806CJSTU+9kH9aHVyOgQpZDT8YjjpH8qiXgZ\ny0IEukKOZYJrl6hfm0+0l13Xg+uc1DH1SGV/s/sLhv0UMAXSkHDhn5Zat/aVQ4eK\nnXBzFckb/wRCDvuKD6yH5TGRtsdoznnPXaSE81AucNFDkvUTyvkLJacQ3LGunAoG\n2gztTwyeVKgZWldVqgw42JN/cE6QuKk85UqGUKuFPIxhxUIPIcaCvVuS/+8y7F99\nAGIRt87UAkSNEa4RCEKWK9j+zyRed+aP8YH4DuyZSSEHWDAq/C3sJwY5DSA7IxRu\ngZAiYEOq54q0VA7glU9ngMTYeZOXr6TQetBxwSWESMaaes+kAcCmv8P+WwUH5aUS\nxe4hn1ewjNNxVuoJlVpu5ljyhvojQwyd/e25JkwFTOO5gdVhRquYnJsCAwEAAQ==\n-----END RSA PUBLIC KEY-----\n\n",
       "serialized_signature": "Sign.Rsa4096.zJ2l2olhXzfLnzMEfD7T2rOgVOjN1kyvJobp80qvkonBloQ_qgJJYuzrphNWMzwXdHOEKgUoVE_9uwI17iNuamu0RuIllEd6QhCb4kj792hG2BqurqrkvfYwk1XczZk9fK9AkHPYw4kFU2rXtdHF973Sr2IylyaLN6J42wNKAHsrk-u_4qy8t5TOkkNCvvI3AQMppqau42dZBKvieVvpJq29C-7y-DAvwfK1sJVIAM8M9Vv1yaT8qGOYYUnzMrChJ4PG97QQOUsnBgz1vHNHMQSNV5hxu7lLG0zi-CT00987qKefPhFzHYi3x_oEqSbjFaW8xtXN_OAZe5WjL3kVJSWF6bsdpyqrrGrv52ypJeJApI6P5Mxii6998IJwjQW7mYiwiNLvb5ELA6ygBFWRDS1cs-fEEUlA65_92iU8oIAILrQqW-5q5m-y17rrCz6NPcFT137Xxx9u6X_7dt4ZNarfmIHLeEl6Ci_755aPmAzMf7emqlvuzd-A4Glr50KCOenYhkP06pdsAgTFc5nXjq6OSumibthwX5NQeRwh8E2xELraFZzqxJrsvnxZavg3vFQBZOULHt6zByg4dj6SjlJlt1zOuuAb83fILltZKzKmi_kmAJggDGq1SZKPCjRPyWhQ5ywsy7CjtzChHhETSRxVWFmc75Wi4Y3-GJZsIbU=.RnJlc2ggTm9yd2VnaWFuIHNhbG1vbiwgbGlnaHRseSBicnVzaGVkIHdpdGggb3VyIGhlcmJlZCBEaWpvbiBtdXN0YXJkIHNhdWNlLCB3aXRoIGNob2ljZSBvZiB0d28gc2lkZXMu"
