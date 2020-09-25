@@ -212,7 +212,7 @@ defmodule CompatTest do
       sentences_to_encrypt
       |> Enum.flat_map(fn sentence ->
         passphrase =
-          Faker.Food.dish() <> " " <> Faker.Name.first_name() <> " " <> Faker.Name.last_name()
+          Faker.Food.dish() <> " " <> Faker.Person.first_name() <> " " <> Faker.Person.last_name()
 
         encrypted = Cryppo.encrypt_with_derived_key(sentence, aes, pbkdf2hmac, passphrase)
 
