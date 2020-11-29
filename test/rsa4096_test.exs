@@ -163,4 +163,14 @@ defmodule Rsa4096Test do
       assert Rsa4096.verify(rsa_signature_with_wrong_signature, public_key) == false
     end
   end
+
+  test "trying to encrypt more than Rsa4096 + rsa_pkcs1_oaep_padding can handle" do
+    key = Cryppo.generate_encryption_key("Rsa4096")
+
+    data = 1..1000 |> Enum.map_join("", fn _ -> "a" end)
+
+    assert Cryppo.encrypt(data, "Rsa4096", key) ==
+             {:encryption_error,
+              "the input data to encrypt is likely bigger than Rsa4096 + rsa_pkcs1_oaep_padding can handle"}
+  end
 end

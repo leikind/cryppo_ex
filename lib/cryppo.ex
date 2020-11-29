@@ -96,6 +96,7 @@ defmodule Cryppo do
           EncryptedData.t()
           | {:unsupported_encryption_strategy, atom}
           | :encryption_error
+          | {:encryption_error, any}
   def encrypt(data, encryption_strategy)
       when is_binary(encryption_strategy) and is_binary(data) do
     with {:ok, mod} <- find_strategy(encryption_strategy) do

@@ -15,7 +15,9 @@ defmodule Cryppo.EncryptionStrategy do
               {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}
 
   @callback encrypt(binary, EncryptionKey.t()) ::
-              {:ok, binary, EncryptionArtefacts.t()} | :encryption_error
+              {:ok, binary, EncryptionArtefacts.t()}
+              | :encryption_error
+              | {:encryption_error, any}
 
   @callback decrypt(EncryptedData.t(), EncryptionKey.t()) ::
               {:ok, binary} | :decryption_error | {:decryption_error, {any, any}}

@@ -71,6 +71,13 @@ defmodule Cryppo.Rsa4096 do
              tuple_size(public_key) == 3 do
     encrypted = data |> :public_key.encrypt_public(public_key, rsa_padding: @padding)
     {:ok, encrypted, %EncryptionArtefacts{}}
+  rescue
+    _e in ErlangError ->
+      {:encryption_error,
+       "the input data to encrypt is likely bigger than Rsa4096 + rsa_pkcs1_oaep_padding can handle"}
+
+    e ->
+      e
   end
 
   def encrypt(_, _), do: :encryption_error
