@@ -258,7 +258,12 @@ defmodule Cryppo.Rsa4096 do
 
   """
   @spec sign(binary, rsa_private_key() | EncryptionKey.t() | pem()) ::
-          RsaSignature.t() | {:error, :invalid_encryption_key}
+          RsaSignature.t() | {:error, :invalid_encryption_key} | {:error, String.t()}
+
+  def sign(data, _maybe_pem) when is_binary(data) and byte_size(data) > 512 do
+    {:error, "cannot sign more than 512 bytes"}
+  end
+
   def sign(data, maybe_pem) when is_binary(data) and is_binary(maybe_pem) do
     with {:ok, encryption_key} <- from_pem(maybe_pem) do
       sign(data, encryption_key)

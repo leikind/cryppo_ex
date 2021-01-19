@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.8 19.01.2021
+
+- Restrict RSA singing to 512 bytes or less
+
 ## v0.1.7 29.11.2020
 
 - Handle a error when too much data is given to RSA encryption

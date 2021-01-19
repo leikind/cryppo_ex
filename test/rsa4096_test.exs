@@ -42,6 +42,18 @@ defmodule Rsa4096Test do
   end
 
   describe "RSA signatures" do
+    test "signing is restricted to 512 bytes" do
+      private_key = Cryppo.generate_encryption_key("Rsa4096")
+
+      to_sign = 1..512 |> Enum.reduce("", fn _, acc -> "a" <> acc end)
+
+      assert %Cryppo.RsaSignature{} = Rsa4096.sign(to_sign, private_key)
+
+      to_sign = to_sign <> "b"
+
+      assert Rsa4096.sign(to_sign, private_key) == {:error, "cannot sign more than 512 bytes"}
+    end
+
     test "sign data with a private key (a EncryptionKey struct) and then verify with the public key" do
       private_key = Cryppo.generate_encryption_key("Rsa4096")
 
