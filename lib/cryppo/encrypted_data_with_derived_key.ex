@@ -28,7 +28,11 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
   @spec load(String.t(), String.t(), String.t(), String.t(), String.t()) ::
           {:ok, t()}
           | {:error,
-             :invalid_base64 | :invalid_derivation_artefacts | :invalid_yaml | :invalid_bson}
+             :invalid_base64
+             | :invalid_derivation_artefacts
+             | :invalid_yaml
+             | :invalid_bson
+             | String.t()}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}
   def load(

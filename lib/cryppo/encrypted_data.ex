@@ -48,7 +48,7 @@ defmodule Cryppo.EncryptedData do
   @doc false
   @spec load(String.t(), String.t(), String.t()) ::
           {:ok, t()}
-          | {:error, :invalid_yaml, :invalid_bson, :invalid_base64}
+          | {:error, :invalid_yaml, :invalid_bson, :invalid_base64 | String.t()}
           | {:unsupported_encryption_strategy, binary}
   def load(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
     case find_strategy(strategy_name) do

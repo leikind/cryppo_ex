@@ -21,7 +21,7 @@ defmodule Cryppo.RsaSignature do
   defstruct [:signature, :data]
 
   @doc false
-  @spec load(String.t(), String.t()) :: {:ok, t()} | {:error, :invalid_base64}
+  @spec load(String.t(), String.t()) :: {:ok, t()} | {:error, :invalid_base64} | {:ok, String.t()}
   def load(signature, data) do
     with {:ok, signature} <- decode_base64(signature),
          {:ok, data} <- decode_base64(data) do

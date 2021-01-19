@@ -6,6 +6,16 @@ defmodule SerializationTest do
   @plain_data "Hello world!"
   @all_encryption_strategies ["Rsa4096", "Aes256Gcm", "Aes128Ctr"]
 
+  test "Base 64 is banned, only base64 URL-safe variant is OK" do
+    base64_not_url_safe = Base.encode64(<<255, 127, 254, 252>>)
+
+    serialized_and_containing_base64_not_url_safe =
+      "Aes256Gcm." <> base64_not_url_safe <> "." <> base64_not_url_safe
+
+    assert Cryppo.load(serialized_and_containing_base64_not_url_safe) ==
+             {:error, "only URL-safe base64 is supported"}
+  end
+
   describe "with a generated key" do
     test "Legacy format: encrypt serialize, de-serialize, decrypt with aes_256_gcm" do
       for strategy <- @all_encryption_strategies do

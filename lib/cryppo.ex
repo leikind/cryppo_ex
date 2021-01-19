@@ -293,7 +293,8 @@ defmodule Cryppo do
              | :invalid_bson
              | :invalid_derivation_artefacts
              | :invalid_serialization_value
-             | :invalid_yaml}
+             | :invalid_yaml
+             | String.t()}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}
   def load(serialized) when is_binary(serialized) do

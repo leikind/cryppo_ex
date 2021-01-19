@@ -45,7 +45,7 @@ defmodule Cryppo.DerivedKey do
   def current_version, do: @current_version
 
   @spec load_artefacts(binary) ::
-          {:error, :invalid_bson | :invalid_derivation_artefacts | :invalid_yaml}
+          {:error, :invalid_bson | :invalid_derivation_artefacts | :invalid_yaml | String.t()}
           | {:ok, binary, integer, integer}
   def load_artefacts(<<"---", _::binary>> = bin) do
     with {:ok, derivation_artefacts} <- Yaml.decode(bin) do

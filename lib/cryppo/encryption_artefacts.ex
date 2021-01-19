@@ -26,7 +26,8 @@ defmodule Cryppo.EncryptionArtefacts do
   def current_version, do: @current_version
 
   @doc false
-  @spec load(String.t()) :: {:ok, t()} | {:error, :invalid_base64 | :invalid_yaml | :invalid_bson}
+  @spec load(String.t()) ::
+          {:ok, t()} | {:error, :invalid_base64 | :invalid_yaml | :invalid_bson | String.t()}
   def load(s) when is_binary(s) do
     with {:ok, encryption_artefacts_base64} <- decode_base64(s) do
       load_artefacts(encryption_artefacts_base64)
