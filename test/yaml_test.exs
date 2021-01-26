@@ -24,6 +24,14 @@ defmodule YamlTest do
     end)
   end
 
+  test "why lists of numbers used as strings in classic Erlang is a bad bad bad idea" do
+    input = %{"123" => [97, 98, 99]}
+
+    {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
+
+    assert out == %{"123" => "abc"}
+  end
+
   test "keys are numbers" do
     input = %{"123" => 12}
     {:ok, out} = input |> Yaml.encode() |> Yaml.decode()
