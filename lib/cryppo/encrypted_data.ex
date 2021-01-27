@@ -48,7 +48,7 @@ defmodule Cryppo.EncryptedData do
   @doc false
   @spec load(String.t(), String.t(), String.t()) ::
           {:ok, t()}
-          | {:error, :invalid_yaml, :invalid_bson, :invalid_base64 | String.t()}
+          | {:error, :invalid_bson, :invalid_base64, :invalid_encryption_artefacts | String.t()}
           | {:unsupported_encryption_strategy, binary}
   def load(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
     case find_strategy(strategy_name) do
@@ -64,21 +64,18 @@ defmodule Cryppo.EncryptedData do
   end
 
   defimpl Serialization do
-    @spec serialize(EncryptedData.t(), Keyword.t()) :: binary
-    def serialize(
-          %EncryptedData{
-            encryption_strategy_module: mod,
-            encrypted_data: encrypted_data,
-            encryption_artefacts: encryption_artefacts
-          },
-          opts \\ []
-        ) do
+    @spec serialize(EncryptedData.t()) :: binary
+    def serialize(%EncryptedData{
+          encryption_strategy_module: mod,
+          encrypted_data: encrypted_data,
+          encryption_artefacts: encryption_artefacts
+        }) do
       strategy_name = apply(mod, :strategy_name, [])
 
       [
         strategy_name,
         Base.url_encode64(encrypted_data, padding: true),
-        Serialization.serialize(encryption_artefacts, opts)
+        Serialization.serialize(encryption_artefacts)
       ]
       |> Enum.join(".")
     end

@@ -30,7 +30,6 @@ defmodule Cryppo.MixProject do
   defp deps do
     [
       {:pbkdf2, ">= 2.0.0"},
-      {:yamerl, ">= 0.8.0"},
       {:cyanide, ">= 1.0.0"},
       {:credo, ">= 1.1.0", only: :dev},
       {:ex_cli, ">= 0.1.0"},

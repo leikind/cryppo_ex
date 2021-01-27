@@ -252,15 +252,12 @@ defmodule Cryppo do
       ...> |> Cryppo.Rsa4096.sign(private_key)
       ...> |> Cryppo.serialize()
   """
-  @spec serialize(
-          EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t(),
-          Keyword.t()
-        ) ::
+  @spec serialize(EncryptedData.t() | EncryptedDataWithDerivedKey.t() | RsaSignature.t()) ::
           binary
-  def serialize(s, opts \\ [])
-  def serialize(%EncryptedData{} = s, opts), do: Serialization.serialize(s, opts)
-  def serialize(%EncryptedDataWithDerivedKey{} = s, opts), do: Serialization.serialize(s, opts)
-  def serialize(%RsaSignature{} = s, opts), do: Serialization.serialize(s, opts)
+  def serialize(s)
+  def serialize(%EncryptedData{} = s), do: Serialization.serialize(s)
+  def serialize(%EncryptedDataWithDerivedKey{} = s), do: Serialization.serialize(s)
+  def serialize(%RsaSignature{} = s), do: Serialization.serialize(s)
 
   @doc """
   Load various Cryppo data structures from their serialized forms
@@ -293,7 +290,7 @@ defmodule Cryppo do
              | :invalid_bson
              | :invalid_derivation_artefacts
              | :invalid_serialization_value
-             | :invalid_yaml
+             | :invalid_encryption_artefacts
              | String.t()}
           | {:unsupported_encryption_strategy, binary}
           | {:unsupported_key_derivation_strategy, binary}

@@ -3,6 +3,6 @@ defprotocol Cryppo.Serialization do
 
   # Cryppo serialization protocol
 
-  @spec serialize(t, Keyword.t()) :: String.t() | {:error, atom}
-  def serialize(value, opts \\ [])
+  @spec serialize(t) :: String.t() | {:error, atom}
+  def serialize(value)
 end

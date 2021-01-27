@@ -11,7 +11,7 @@ defmodule Cryppo.DerivedKey do
   * Without an encryption key. Encrypting or decrypting with this struct requires a passphrase to derive the key
   """
 
-  alias Cryppo.{DerivedKey, EncryptionKey, Serialization, Yaml}
+  alias Cryppo.{DerivedKey, EncryptionKey, Serialization}
 
   @typedoc """
   Struct `Cryppo.DerivedKey`
@@ -44,20 +44,13 @@ defmodule Cryppo.DerivedKey do
   @spec current_version :: <<_::8>>
   def current_version, do: @current_version
 
-  @spec load_artefacts(binary) ::
-          {:error, :invalid_bson | :invalid_derivation_artefacts | :invalid_yaml | String.t()}
-          | {:ok, binary, integer, integer}
-  def load_artefacts(<<"---", _::binary>> = bin) do
-    with {:ok, derivation_artefacts} <- Yaml.decode(bin) do
-      parse_derivation_artefacts(derivation_artefacts)
-    end
-  end
-
   def load_artefacts(<<@current_version::binary, bin::binary>>) do
     with {:ok, %{"iv" => {0x0, iv}, "i" => i, "l" => l}} <- Cyanide.decode(bin) do
       %{"iv" => iv, "i" => i, "l" => l} |> parse_derivation_artefacts()
     end
   end
+
+  def load_artefacts(_), do: {:error, :invalid_derivation_artefacts}
 
   @spec parse_derivation_artefacts(any) ::
           {:error, :invalid_derivation_artefacts} | {:ok, binary, integer, integer}
@@ -65,33 +58,22 @@ defmodule Cryppo.DerivedKey do
   defp parse_derivation_artefacts(_), do: {:error, :invalid_derivation_artefacts}
 
   defimpl Serialization do
-    @spec serialize(DerivedKey.t(), Keyword.t()) ::
-            String.t() | {:error, :cannot_bson_encode | :unrecognized_format}
-    def serialize(
-          %DerivedKey{
-            key_derivation_strategy: key_derivation_mod,
-            salt: salt,
-            iter: iterations,
-            length: length
-          },
-          opts \\ []
-        ) do
-      version = Keyword.get(opts, :version, :latest_version)
+    @spec serialize(DerivedKey.t()) :: String.t() | {:error, :cannot_bson_encode}
+    def serialize(%DerivedKey{
+          key_derivation_strategy: key_derivation_mod,
+          salt: salt,
+          iter: iterations,
+          length: length
+        }) do
       key_derivation_mod = apply(key_derivation_mod, :strategy_name, [])
 
-      with {:ok, bytes} <- serialize_for_version({version, {salt, iterations, length}}) do
+      with {:ok, bytes} <- serialize_for_version(salt, iterations, length) do
         derivation_artefacts = Base.url_encode64(bytes, padding: true)
         [key_derivation_mod, derivation_artefacts] |> Enum.join(".")
       end
     end
 
-    @spec serialize_for_version({atom, {any, any, any}}) ::
-            {:error, :cannot_bson_encode | :unrecognized_format} | {:ok, binary}
-    def serialize_for_version({:legacy, {salt, iterations, length}}) do
-      {:ok, Yaml.encode(%{"iv" => salt, "i" => iterations, "l" => length})}
-    end
-
-    def serialize_for_version({:latest_version, {salt, iterations, length}}) do
+    def serialize_for_version(salt, iterations, length) do
       # 0x0 is a marker for generic binary subtype in BSON
       # see http://bsonspec.org/spec.html
       with_wrapped_binaries = %{"iv" => {0x0, salt}, "i" => iterations, "l" => length}
@@ -102,7 +84,5 @@ defmodule Cryppo.DerivedKey do
         {:ok, with_version_prefix}
       end
     end
-
-    def serialize_for_version({_, {_, _, _}}), do: {:error, :unrecognized_format}
   end
 end

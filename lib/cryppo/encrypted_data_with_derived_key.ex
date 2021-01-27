@@ -30,7 +30,6 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
           | {:error,
              :invalid_base64
              | :invalid_derivation_artefacts
-             | :invalid_yaml
              | :invalid_bson
              | String.t()}
           | {:unsupported_encryption_strategy, binary}
@@ -44,8 +43,8 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
       ) do
     with {:ok, key_derivation_mod} <-
            find_key_derivation_strategy(key_derivation_strategy),
-         {:ok, derivation_artefacts_yaml} <- decode_base64(derivation_artefacts_base64),
-         {:ok, salt, iterations, length} <- DerivedKey.load_artefacts(derivation_artefacts_yaml),
+         {:ok, derivation_artefacts} <- decode_base64(derivation_artefacts_base64),
+         {:ok, salt, iterations, length} <- DerivedKey.load_artefacts(derivation_artefacts),
          {:ok, encrypted_data} <-
            EncryptedData.load(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
       hash = apply(key_derivation_mod, :hash_function, [])
@@ -65,16 +64,13 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
   end
 
   defimpl Serialization do
-    @spec serialize(EncryptedDataWithDerivedKey.t(), Keyword.t()) :: binary
-    def serialize(
-          %EncryptedDataWithDerivedKey{
-            derived_key: %DerivedKey{} = derived_key,
-            encrypted_data: %EncryptedData{} = encrypted_data
-          },
-          opts \\ []
-        ) do
+    @spec serialize(EncryptedDataWithDerivedKey.t()) :: binary
+    def serialize(%EncryptedDataWithDerivedKey{
+          derived_key: %DerivedKey{} = derived_key,
+          encrypted_data: %EncryptedData{} = encrypted_data
+        }) do
       [encrypted_data, derived_key]
-      |> Enum.map(fn v -> Serialization.serialize(v, opts) end)
+      |> Enum.map(fn v -> Serialization.serialize(v) end)
       |> Enum.join(".")
     end
   end
