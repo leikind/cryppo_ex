@@ -175,11 +175,34 @@ defmodule CompatTest do
     :ok = File.close(file)
   end
 
+  test "can decrypt a serialized encrypted value encrypted with Aes256Gcm by Ruby Cryppo" do
+    {:ok, key} = Base.url_decode64("S5-0MiMs1jkg52bB9nzl1IoNYzxfSyxuoIx6Tvj2vCk=")
+
+    serialized_and_encrypted =
+      "Aes256Gcm.29dTcNFcPs-0SOnA.QUAAAAAFaXYADAAAAABAyEXNV57ujX0L9awFYXQAEAAAAABokHlpozRd-A3oFufpICxHAmFkAAUAAABub25lAAA="
+
+    {:ok, restored_encrypted_data} = Cryppo.load(serialized_and_encrypted)
+
+    assert Cryppo.decrypt(restored_encrypted_data, key) == {:ok, "this is love"}
+  end
+
   test "fails to decrypt a serialized encrypted value encrypted with Aes256Gcm by Ruby Cryppo in the old format" do
     serialized =
       "Aes256Gcm.29dTcNFcPs-0SOnA.LS0tCml2OiAhYmluYXJ5IHwtCiAgUU1oRnpWZWU3bzE5Qy9XcwphdDogIWJpbmFyeSB8LQogIGFKQjVhYU0wWGZnTjZCYm42U0FzUnc9PQphZDogbm9uZQo="
 
     assert Cryppo.load(serialized) == {:error, :invalid_encryption_artefacts}
+  end
+
+  test "can decrypt a serialized encrypted value encrypted with Rsa4096 by Ruby Cryppo" do
+    pem =
+      "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
+
+    serialized =
+      "Rsa4096.mxqaQRwtp0SBmno6syisN4orlH-Q4-60I_CmMYXD0e3QliXrK4VUn0dRBHJNQNHoJNRAtd5-Y4OniM8W5cFUMkVhseaQsBR3AXIFUvcQYID8_m5SRp6rhcOxih_6Httk6UBqSUg4s8LvBO1MXCjikBHSwjvrth_EowC9epOR7YeBEKDShOdbBf7riP5aXby037CS-ofI7wVv2dGoc-rY1Z4Khdufofu9VhdejmXQG3vvzPyIkEv-zy_fgtr31qY0VSQ0r2W3VRsRE94KOF88cSl2LmDv0tD96VMfudqFQsAtieTCo7Be-BpDcnSBhiVJGN9Sc07DRHSJ88EnmqTGwaRuK-6fSdyPEhRWH0rAz0CLg42gks3bpfYp68dEhWxi5zL_dZke1k-R82ak3fGtGTbjZxH0V5s6WczGRCQwAl86fE95LI_9JEWpeiqhbRlu3aRTKcs4EZC4SRROf0-5Qa-l4atrVp2gTRX6H8tPCdqNko5vUfub4RIehOJDq6Y--rw53ZFXD5h89ifXQgVn_uz1SAo78DR8TDGMRNps2JypcgMHjsYG3SyGw-LXp61ADZGx_5mm6tJK3Ubib30D7j5R_QV_bVSSaRCv16tXn9kgbg6k-BLseNvC7f9kuS2aabiqGROwzHuBL4lbJOscoCNUAGmLz_ShYlhuysUP_D0=.QQUAAAAA"
+
+    {:ok, restored_encrypted_data} = Cryppo.load(serialized)
+
+    assert Cryppo.decrypt(restored_encrypted_data, pem) == {:ok, "this is love"}
   end
 
   test "fails to decrypt a serialized encrypted value encrypted with Rsa4096 by Ruby Cryppo in the old format" do
@@ -198,6 +221,18 @@ defmodule CompatTest do
     ser = Cryppo.Serialization.serialize(encrypted)
     {:ok, restored_encrypted} = Cryppo.load(ser)
     assert Cryppo.decrypt(restored_encrypted, pem) == {:ok, "this is love"}
+  end
+
+  test "decrypt a value encrypted with a derived key and serialized with ruby Cryppo" do
+    {:ok, encrypted} =
+      "Aes256Gcm.8nGHS3XRrIdmSqju.QUAAAAAFaXYADAAAAACpoQYpjMizQQ-7WFsFYXQAEAAAAAB7XI-rR4jdq4qlSAlNv5YZAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.SzAAAAAFaXYAFAAAAADfux7u3udzUVU5J3pZxAPlEkxhWxBpAINRAAAQbAAgAAAAAA=="
+      |> Cryppo.load()
+
+    {:ok, decrypted, derived_key} =
+      encrypted |> Cryppo.decrypt_with_derived_key("this is a passphrase")
+
+    assert decrypted == "this is love"
+    assert %DerivedKey{} = derived_key
   end
 
   test "fails to decrypt a value encrypted with a derived key and serialized with ruby Cryppo in the old format" do
