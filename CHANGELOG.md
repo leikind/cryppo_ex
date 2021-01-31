@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.0 31.01.2021
+
+- Drop support for the legacy serialization format
+
 ## v0.1.8 19.01.2021
 
 - Restrict RSA singing to 512 bytes or less
