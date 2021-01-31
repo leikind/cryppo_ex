@@ -227,11 +227,6 @@ defmodule Cryppo do
   * `Cryppo.EncryptedDataWithDerivedKey`
   * `Cryppo.RsaSignature`
 
-  `Cryppo.EncryptedData` and `Cryppo.EncryptedDataWithDerivedKey` have two serialization formats:
-  a legacy format and a more efficient current format.
-  Both formats are loaded by `Cryppo.load/1`. `Cryppo.serialize/2` will serialize structures using the new format.
-  In order to serialize a structure using the old format please use `Cryppo.serialize(struct, version: :legacy`).
-
   ## Examples
 
   `Cryppo.EncryptedData`:
@@ -267,10 +262,6 @@ defmodule Cryppo do
   * `Cryppo.EncryptedData`
   * `Cryppo.EncryptedDataWithDerivedKey`
   * `Cryppo.RsaSignature`
-
-  `Cryppo.EncryptedData` and `Cryppo.EncryptedDataWithDerivedKey` have two serialization formats:
-  a legacy format and a more efficient current format.
-  Both formats are loaded by `Cryppo.load/1`. `Cryppo.serialize/2` will serialize structures using the new format.
 
   ## Examples
 
