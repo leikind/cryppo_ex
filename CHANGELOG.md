@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.1 31.01.2021
+
+Support for OTP: dependency pbkdf2 copied to the library sources,
+calls to the old API of crypto replaced by new calls.
+
 ## v0.2.0 31.01.2021
 
 - Drop support for the legacy serialization format

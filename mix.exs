@@ -4,8 +4,8 @@ defmodule Cryppo.MixProject do
   def project do
     [
       app: :cryppo_ex,
-      version: "0.2.0",
-      elixir: ">= 1.5.0",
+      version: "0.2.1",
+      elixir: ">= 1.10.0",
       erlc_paths: ["lib"],
       deps: deps(),
       name: "CryppoEx",
