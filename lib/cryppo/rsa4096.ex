@@ -183,7 +183,7 @@ defmodule Cryppo.Rsa4096 do
       ...>       "kT22vUleyt3lBNPK3QJAEr56asvREcIDFkbs7Ebjev4U1PL58w78ipp49Ti5FiwH\\n" <>
       ...>       "vR9vuGcUcIDcWKOl05t4D35F5A/DskP6dGYA1cuWNg==\\n" <>
       ...>       "-----END RSA PRIVATE KEY-----\\n\\n"
-      ...> {:ok, encryption_key} = Cryppo.Rsa4096.from_pem(pem)
+      ...> {:ok, _encryption_key} = Cryppo.Rsa4096.from_pem(pem)
   """
 
   @spec from_pem(pem) :: {:ok, EncryptionKey.t()} | {:error, :invalid_encryption_key}

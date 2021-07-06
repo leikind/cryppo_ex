@@ -6,6 +6,7 @@ defmodule Cryppo.MixProject do
       app: :cryppo_ex,
       version: "0.2.0",
       elixir: ">= 1.5.0",
+      erlc_paths: ["lib"],
       deps: deps(),
       name: "CryppoEx",
       description: "Encryption library for the Meeco platform",
@@ -29,7 +30,6 @@ defmodule Cryppo.MixProject do
 
   defp deps do
     [
-      {:pbkdf2, ">= 2.0.0"},
       {:cyanide, ">= 1.0.0"},
       {:credo, ">= 1.1.0", only: :dev},
       {:ex_cli, ">= 0.1.0"},
