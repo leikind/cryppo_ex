@@ -1,8 +1,13 @@
 # Changelog
 
+## v0.2.2 29.08.2022
+
+- Upgrade dev dependencies
+- Minimal version of elixir is 1.12.0
+
 ## v0.2.1 07.07.2021
 
-- Support for OTP: dependency pbkdf2 copied to the library sources,
+- Support for OTP 23: dependency pbkdf2 copied to the library sources,
   calls to the old API of crypto replaced by new calls.
 
 ## v0.2.0 31.01.2021
