@@ -1,3 +1,5 @@
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=master&repo=249279012)
+
 # CryppoEx
 
 CryppoEx is a cryptographic library that enables you to encrypt and decrypt data.
