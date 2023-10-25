@@ -1,3 +1,3 @@
-ExUnit.configure(%{trace: true})
+ExUnit.configure(trace: true)
 ExUnit.start()
 Faker.start()
