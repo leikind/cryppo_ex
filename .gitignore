@@ -27,3 +27,4 @@ cryppo_ex-*.tar
 /.elixir_ls/
 
 .DS_Store
+.tool-versions
