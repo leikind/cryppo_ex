@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.3 30.11.2023
+
+- Upgrade dev dependencies
+- Minor improvements
+- Minimal version of elixir is 1.13.0
+
 ## v0.2.2 29.08.2022
 
 - Upgrade dev dependencies
