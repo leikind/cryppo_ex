@@ -134,7 +134,7 @@ defmodule SerializationTest do
                encrypted_data.encrypted_data.encryption_artefacts
     end
 
-    test "encrypt with a derived key, serialize, load, encrypt with the derived key" do
+    test "encrypt with a derived key, serialize, load, decrypt with the derived key" do
       encrypted_data =
         @plain_data
         |> Cryppo.encrypt_with_derived_key("Aes256Gcm", "Pbkdf2Hmac", "my passphrase")
