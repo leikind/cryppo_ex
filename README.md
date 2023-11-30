@@ -7,8 +7,8 @@
 CryppoEx is a cryptographic library that enables you to encrypt and decrypt data.
 CryppoEx combines very different ciphers under one simplified API, and a set of serialization formats.
 
-CryppoEx is an Elixir port of [Cryppo in Ruby](https://github.com/Meeco/cryppo)
-and [Cryppo-js](https://github.com/Meeco/cryppo-js) used for [the Meeco platform](https://dev.meeco.me/).
+CryppoEx is an Elixir port of [Cryppo in Ruby](https://github.com/Meeco/cryppo), [Cryppo in Dart](https://pub.dev/packages/cryppo),
+and [Cryppo-js](https://github.com/Meeco/cryppo-js) used for [the Meeco platform](https://www.meeco.me/platform).
 
 CryppoEx uses Erlang modules [crypto](https://erlang.org/doc/man/crypto.html)
 and [public_key](https://erlang.org/doc/man/public_key.html) under the hood.
