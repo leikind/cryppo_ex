@@ -5,7 +5,7 @@ defmodule Cryppo.MixProject do
     [
       app: :cryppo_ex,
       version: "0.2.2",
-      elixir: ">= 1.12.0",
+      elixir: ">= 1.13.0",
       erlc_paths: ["lib"],
       deps: deps(),
       name: "CryppoEx",
