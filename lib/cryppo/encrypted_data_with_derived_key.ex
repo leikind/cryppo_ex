@@ -69,9 +69,7 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
           derived_key: %DerivedKey{} = derived_key,
           encrypted_data: %EncryptedData{} = encrypted_data
         }) do
-      [encrypted_data, derived_key]
-      |> Enum.map(fn v -> Serialization.serialize(v) end)
-      |> Enum.join(".")
+      [encrypted_data, derived_key] |> Enum.map_join(".", &Serialization.serialize/1)
     end
   end
 end

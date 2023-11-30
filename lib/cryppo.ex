@@ -288,13 +288,10 @@ defmodule Cryppo do
   def load(serialized) when is_binary(serialized) do
     case String.split(serialized, ".") do
       ["Sign", "Rsa4096", signature, data] ->
-        with {:ok, sig} <- RsaSignature.load(signature, data), do: {:ok, sig}
+        RsaSignature.load(signature, data)
 
       [strategy_name, encrypted_data, encryption_artefacts] ->
-        with {:ok, encrypted_data} <-
-               EncryptedData.load(strategy_name, encrypted_data, encryption_artefacts) do
-          {:ok, encrypted_data}
-        end
+        EncryptedData.load(strategy_name, encrypted_data, encryption_artefacts)
 
       [
         strategy,
@@ -303,15 +300,13 @@ defmodule Cryppo do
         key_derivation_strategy,
         derivation_artefacts
       ] ->
-        with {:ok, encrypted_data_with_derived_key} <-
-               EncryptedDataWithDerivedKey.load(
-                 strategy,
-                 encrypted_data,
-                 encryption_artefacts,
-                 key_derivation_strategy,
-                 derivation_artefacts
-               ),
-             do: {:ok, encrypted_data_with_derived_key}
+        EncryptedDataWithDerivedKey.load(
+          strategy,
+          encrypted_data,
+          encryption_artefacts,
+          key_derivation_strategy,
+          derivation_artefacts
+        )
 
       _ ->
         {:error, :invalid_serialization_value}
