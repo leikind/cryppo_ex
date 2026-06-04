@@ -9,6 +9,7 @@ defmodule Cryppo.MixProject do
       erlc_paths: ["lib"],
       deps: deps(),
       name: "CryppoEx",
+      aliases: aliases(),
       description: "Encryption library for the Meeco platform",
       escript: escript(),
       package: package(),
@@ -54,6 +55,15 @@ defmodule Cryppo.MixProject do
       links: %{
         "Github" => "https://github.com/leikind/cryppo_ex"
       }
+    ]
+  end
+
+  defp aliases do
+    [
+      d: ["dialyzer"],
+      c: ["credo --strict"],
+      outdated: ["hex.outdated --all"],
+      remove_unused_deps: ["deps.clean --unused --unlock"]
     ]
   end
 end
