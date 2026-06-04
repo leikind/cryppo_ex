@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.4 04.06.2026
+
+- Upgrade dev dependencies
+- Upgrade Cyanide
+- Remove Faker
+
 ## v0.2.3 30.11.2023
 
 - Upgrade dev dependencies
