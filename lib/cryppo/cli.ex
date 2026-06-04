@@ -492,23 +492,24 @@ defmodule Cryppo.Cli do
         with {:ok, pem} <- File.read(public_key_pem_file),
              {:ok, data_to_verify_serialized} <- File.read(file_to_verify),
              {:ok, key} <- Rsa4096.from_pem(pem),
-             {:ok, rsa_signature = %RsaSignature{}} <- Cryppo.load(data_to_verify_serialized) do
-          if Rsa4096.verify(rsa_signature, key) do
-            IO.puts("Data signature verified")
-
-            with {:ok, destination_file} <- File.open(destination, [:write]),
-                 :ok <- IO.write(destination_file, rsa_signature.data),
-                 :ok <- File.close(destination_file) do
-              IO.puts("Data written to file #{destination}")
-            else
-              err -> IO.puts(:stderr, inspect(err))
-            end
-          else
-            IO.puts("Data could not be verified")
-          end
+             {:ok, rsa_signature = %RsaSignature{}} <- Cryppo.load(data_to_verify_serialized),
+             true <- Rsa4096.verify(rsa_signature, key) || :verification_failed do
+          IO.puts("Data signature verified")
+          write_file_content(destination, rsa_signature.data)
         else
+          :verification_failed -> IO.puts("Data could not be verified")
           err -> IO.puts(:stderr, inspect(err))
         end
+    end
+  end
+
+  defp write_file_content(destination, content) do
+    with {:ok, destination_file} <- File.open(destination, [:write]),
+         :ok <- IO.write(destination_file, content),
+         :ok <- File.close(destination_file) do
+      IO.puts("Data written to file #{destination}")
+    else
+      err -> IO.puts(:stderr, inspect(err))
     end
   end
 

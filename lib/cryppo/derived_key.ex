@@ -65,7 +65,7 @@ defmodule Cryppo.DerivedKey do
           iter: iterations,
           length: length
         }) do
-      key_derivation_mod = apply(key_derivation_mod, :strategy_name, [])
+      key_derivation_mod = key_derivation_mod.strategy_name()
 
       with {:ok, bytes} <- serialize_for_version(salt, iterations, length) do
         derivation_artefacts = Base.url_encode64(bytes, padding: true)

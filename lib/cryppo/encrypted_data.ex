@@ -70,7 +70,7 @@ defmodule Cryppo.EncryptedData do
           encrypted_data: encrypted_data,
           encryption_artefacts: encryption_artefacts
         }) do
-      strategy_name = apply(mod, :strategy_name, [])
+      strategy_name = mod.strategy_name()
 
       [
         strategy_name,

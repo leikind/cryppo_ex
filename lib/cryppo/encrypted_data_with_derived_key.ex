@@ -47,7 +47,7 @@ defmodule Cryppo.EncryptedDataWithDerivedKey do
          {:ok, salt, iterations, length} <- DerivedKey.load_artefacts(derivation_artefacts),
          {:ok, encrypted_data} <-
            EncryptedData.load(strategy_name, encrypted_data_base64, encryption_artefacts_base64) do
-      hash = apply(key_derivation_mod, :hash_function, [])
+      hash = key_derivation_mod.hash_function()
 
       derived_key = %DerivedKey{
         encryption_key: nil,
