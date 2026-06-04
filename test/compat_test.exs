@@ -96,7 +96,8 @@ defmodule CompatTest do
 
     cases = 30
 
-    sentences_to_encrypt = 0..cases |> Enum.map(fn _ -> :crypto.strong_rand_bytes(20) |> Base.encode64() end)
+    sentences_to_encrypt =
+      0..cases |> Enum.map(fn _ -> 20 |> :crypto.strong_rand_bytes() |> Base.encode64() end)
 
     encryption_with_key =
       sentences_to_encrypt
@@ -129,7 +130,7 @@ defmodule CompatTest do
     encryption_with_derived_key =
       sentences_to_encrypt
       |> Enum.flat_map(fn sentence ->
-        passphrase = :crypto.strong_rand_bytes(16) |> Base.encode64()
+        passphrase = 16 |> :crypto.strong_rand_bytes() |> Base.encode64()
 
         encrypted = Cryppo.encrypt_with_derived_key(sentence, aes, pbkdf2hmac, passphrase)
 
