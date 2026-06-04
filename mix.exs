@@ -31,12 +31,12 @@ defmodule Cryppo.MixProject do
 
   defp deps do
     [
-      {:cyanide, "~> 1.0.0"},
-      {:credo, ">= 1.1.0", only: :dev},
-      {:ex_cli, ">= 0.1.0"},
-      {:ex_doc, ">= 0.21.0", only: :dev, runtime: false},
-      {:dialyxir, ">= 1.0.0", only: :dev, runtime: false},
-      {:jason, ">= 1.0.0", only: [:test, :dev]}
+      {:cyanide, "~> 2.0.0"},
+      {:ex_cli, "~> 0.1.0"},
+      {:credo, ">= 1.7.0", only: :dev},
+      {:ex_doc, ">= 0.40.0", only: :dev, runtime: false},
+      {:dialyxir, ">= 1.4.0", only: :dev, runtime: false},
+      {:jason, ">= 1.4.0", only: [:test, :dev]}
     ]
   end
 

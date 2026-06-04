@@ -45,7 +45,7 @@ defmodule Cryppo.DerivedKey do
   def current_version, do: @current_version
 
   def load_artefacts(<<@current_version::binary, bin::binary>>) do
-    with {:ok, %{"iv" => {0x0, iv}, "i" => i, "l" => l}} <- Cyanide.decode(bin) do
+    with {:ok, %{"iv" => %Cyanide.Binary{subtype: :generic, data: iv}, "i" => i, "l" => l}} <- Cyanide.decode(bin) do
       %{"iv" => iv, "i" => i, "l" => l} |> parse_derivation_artefacts()
     end
   end
@@ -76,7 +76,7 @@ defmodule Cryppo.DerivedKey do
     def serialize_for_version(salt, iterations, length) do
       # 0x0 is a marker for generic binary subtype in BSON
       # see http://bsonspec.org/spec.html
-      with_wrapped_binaries = %{"iv" => {0x0, salt}, "i" => iterations, "l" => length}
+      with_wrapped_binaries = %{"iv" => %Cyanide.Binary{subtype: :generic, data: salt}, "i" => iterations, "l" => length}
 
       with {:ok, bin} <- Cyanide.encode(with_wrapped_binaries) do
         with_version_prefix = <<DerivedKey.current_version()::binary, bin::binary>>

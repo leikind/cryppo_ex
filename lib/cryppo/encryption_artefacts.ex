@@ -49,8 +49,8 @@ defmodule Cryppo.EncryptionArtefacts do
   defp load_artefacts(_), do: {:error, :invalid_encryption_artefacts}
 
   defp unwrap_bin(nil), do: nil
-  defp unwrap_bin({0x0, ""}), do: nil
-  defp unwrap_bin({0x0, bin}), do: bin
+  defp unwrap_bin(%Cyanide.Binary{subtype: :generic, data: ""}), do: nil
+  defp unwrap_bin(%Cyanide.Binary{subtype: :generic, data: bin}), do: bin
 
   defimpl Serialization do
     @spec serialize(EncryptionArtefacts.t()) :: String.t() | {:error, :cannot_bson_encode}
@@ -87,7 +87,7 @@ defmodule Cryppo.EncryptionArtefacts do
 
     # 0x0 is a marker for generic binary subtype in BSON
     # see http://bsonspec.org/spec.html
-    defp wrap_bin(nil), do: {0x0, ""}
-    defp wrap_bin(bin), do: {0x0, bin}
+    defp wrap_bin(nil), do: %Cyanide.Binary{subtype: :generic, data: ""}
+    defp wrap_bin(bin), do: %Cyanide.Binary{subtype: :generic, data: bin}
   end
 end
